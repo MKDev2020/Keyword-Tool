@@ -152,3 +152,8 @@ function displayResults(results, originalArticle, placeholders) {
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+window.addEventListener('DOMContentLoaded', () => {
+    const testText = "This is a test article with the keyword.";
+    const highlightedText = testText.replace(/keyword/g, '<span class="highlight table-highlight">keyword</span>');
+    document.getElementById('highlightedArticle').innerHTML = highlightedText;
+});
