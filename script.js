@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
@@ -24,22 +24,15 @@ function countKeywords() {
     const keywordCounts = {};
     const results = [];
 
-    // Initialize all keyword counts to 0
-    categories.forEach(category => {
-        category.keywords.forEach(keyword => {
-            const lowerKW = keyword.toLowerCase();
-            keywordCounts[lowerKW] = 0;  // Set initial count to 0
-        });
-    });
-
     categories.forEach(category => {
         const sortedKeywords = [...category.keywords].sort((a, b) => b.length - a.length);
 
         sortedKeywords.forEach(keyword => {
             const lowerKW = keyword.toLowerCase();
+            keywordCounts[lowerKW] = 0;
+
             const pattern = new RegExp(`(?<!\\w)${escapeRegExp(lowerKW)}(?!\\w)`, 'gi');
             let match;
-
             while ((match = pattern.exec(workingText)) !== null) {
                 const placeholder = `{{kw${placeholders.length}}}`;
                 placeholders.push({
@@ -47,50 +40,51 @@ function countKeywords() {
                     keyword: match[0],
                     colorClass: category.colorClass,
                     original: match[0],
-                    start: match.index,
-                    category: category.name
+                    start: match.index
                 });
 
                 workingText = workingText.substring(0, match.index) +
-                              placeholder +
-                              workingText.substring(match.index + match[0].length);
-
+                    placeholder +
+                    workingText.substring(match.index + match[0].length);
                 pattern.lastIndex = match.index + placeholder.length;
+
                 keywordCounts[lowerKW]++;
             }
+
+            results.push({
+                keyword: keyword,
+                count: keywordCounts[lowerKW],
+                category: category.name,
+                class: category.colorClass
+            });
         });
     });
 
-    // Create the highlighted article with the placeholders
-    displayResults(results, article, placeholders, keywordCounts);
+    displayResults(results, article, placeholders);
 }
 
 function parseKeywords(keywordString) {
-    return keywordString.split(/[\n,]/)
-        .map(keyword => keyword.trim())
-        .filter(keyword => keyword.length > 0);
+    return keywordString
+        .split(/[\n,]/)
+        .map(k => k.trim().toLowerCase())
+        .filter(k => k.length > 0);
 }
 
-function displayResults(results, originalArticle, placeholders, keywordCounts) {
+function displayResults(results, originalArticle, placeholders) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
 
-    // Highlight article using exact matches (handling placeholders)
     let highlightedText = ` ${originalArticle} `;
     placeholders.sort((a, b) => a.start - b.start);
+
     for (let p of placeholders) {
         highlightedText = highlightedText.replace(
             p.placeholder,
             `<span class="highlight ${p.colorClass}">${p.original}</span>`
         );
     }
-    articleElement.innerHTML = highlightedText.trim();
 
-    // Build the results table
-    if (Object.keys(keywordCounts).length === 0) {
-        resultsTable.innerHTML = '<p>No keywords found.</p>';
-        return;
-    }
+    articleElement.innerHTML = highlightedText.trim();
 
     let html = `
         <table>
@@ -105,43 +99,25 @@ function displayResults(results, originalArticle, placeholders, keywordCounts) {
             <tbody>
     `;
 
-    // Group by category (Table -> Section -> LSI)
     const categoryOrder = ['Table', 'Section', 'LSI'];
     categoryOrder.forEach(category => {
-        const categoryResults = [];
-
-        if (category === 'Table') {
-            categoryResults.push(...tableKeywords);
-        } else if (category === 'Section') {
-            categoryResults.push(...sectionKeywords);
-        } else if (category === 'LSI') {
-            categoryResults.push(...lsiKeywords);
-        }
-
+        const categoryResults = results.filter(r => r.category === category);
         if (categoryResults.length > 0) {
-            html += `
-                <tr class="category-header">
-                    <td colspan="4"><strong>${category} Keywords</strong></td>
-                </tr>
-            `;
-
-            categoryResults.forEach(keyword => {
-                const keywordLower = keyword.toLowerCase();
-                const count = keywordCounts[keywordLower] || 0;
-
+            html += `<tr class="category-header"><td colspan="4"><strong>${category} Keywords</strong></td></tr>`;
+            categoryResults.forEach(item => {
                 html += `
                     <tr>
-                        <td><div class="color-swatch ${category.toLowerCase()}-highlight"></div></td>
-                        <td>${keyword}</td>
-                        <td>${count}</td>
-                        <td>${category}</td>
+                        <td><div class="color-swatch ${item.class}"></div></td>
+                        <td>${item.keyword}</td>
+                        <td>${item.count}</td>
+                        <td>${item.category}</td>
                     </tr>
                 `;
             });
         }
     });
 
-    html += `</tbody></table>`;
+    html += '</tbody></table>';
     resultsTable.innerHTML = html;
 }
 
