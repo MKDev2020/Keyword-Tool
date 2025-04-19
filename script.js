@@ -24,61 +24,48 @@ function countKeywords() {
     const keywordCounts = {};
     const results = [];
 
-    let allKeywords = [];
-    categories.forEach((cat, catIndex) => {
-        const sorted = [...cat.keywords].sort((a, b) => b.length - a.length);
-        sorted.forEach(k => {
-            allKeywords.push({
-                keyword: k.trim(),
-                lower: k.trim().toLowerCase(),
-                colorClass: cat.colorClass,
-                category: cat.name,
-                priority: catIndex
+    categories.forEach(category => {
+        const sortedKeywords = [...category.keywords].sort((a, b) => b.length - a.length);
+
+        sortedKeywords.forEach(keyword => {
+            const lowerKW = keyword.toLowerCase();
+            keywordCounts[lowerKW] = 0;
+
+            const pattern = new RegExp(`(?<!\\w)${escapeRegExp(lowerKW)}(?!\\w)`, 'gi');
+            let match;
+
+            while ((match = pattern.exec(workingText)) !== null) {
+                const placeholder = `{{kw${placeholders.length}}}`;
+                placeholders.push({
+                    placeholder,
+                    keyword: match[0],
+                    colorClass: category.colorClass,
+                    original: match[0],
+                    start: match.index,
+                    category: category.name
+                });
+
+                workingText = workingText.substring(0, match.index) +
+                              placeholder +
+                              workingText.substring(match.index + match[0].length);
+
+                pattern.lastIndex = match.index + placeholder.length;
+                keywordCounts[lowerKW]++;
+            }
+
+            // Always add to results, even if count = 0
+            results.push({
+                keyword: keyword,
+                count: keywordCounts[lowerKW],
+                category: category.name,
+                class: category.colorClass.replace('-highlight', '-keyword')
             });
         });
     });
 
-    allKeywords.sort((a, b) => {
-        if (b.lower.length !== a.lower.length) return b.lower.length - a.lower.length;
-        return a.priority - b.priority;
-    });
-
-    allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
-        const pattern = new RegExp(`\\b${escapeRegExp(lower)}\\b`, 'gi');
-        keywordCounts[lower] = 0;
-
-        let match;
-        while ((match = pattern.exec(workingText)) !== null) {
-            const placeholder = `{{kw${placeholders.length}}}`;
-            placeholders.push({
-                placeholder,
-                keyword: match[0],
-                colorClass,
-                original: match[0],
-                start: match.index,
-                category
-            });
-
-            workingText = workingText.substring(0, match.index) +
-                          placeholder +
-                          workingText.substring(match.index + match[0].length);
-
-            pattern.lastIndex = match.index + placeholder.length;
-            keywordCounts[lower]++;
-        }
-
-        if (keywordCounts[lower] > 0) {
-            results.push({
-                keyword,
-                count: keywordCounts[lower],
-                category,
-                class: colorClass.replace('-highlight', '-keyword')
-            });
-        }
-    });
-
     displayResults(results, article, placeholders);
 }
+
 
 function parseKeywords(keywordString) {
     return keywordString
