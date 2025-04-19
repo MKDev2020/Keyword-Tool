@@ -152,8 +152,18 @@ function displayResults(results, workingText, placeholders) {
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
 window.addEventListener('DOMContentLoaded', () => {
-    const testText = "This is a test article with the keyword.";
-    const highlightedText = testText.replace(/keyword/g, '<span class="highlight table-highlight">keyword</span>');
-    document.getElementById('highlightedArticle').innerHTML = highlightedText;
+    const testText = `
+        This is a test article with the Table keyword, 
+        a Section keyword, and an LSI keyword.
+    `;
+
+    const highlightedText = testText
+        .replace(/Table keyword/g, '<span class="highlight table-highlight">Table keyword</span>')
+        .replace(/Section keyword/g, '<span class="highlight section-highlight">Section keyword</span>')
+        .replace(/LSI keyword/g, '<span class="highlight lsi-highlight">LSI keyword</span>');
+
+    document.getElementById('highlightedArticle').innerHTML = highlightedText.trim();
 });
+
