@@ -154,16 +154,27 @@ function escapeRegExp(string) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    const testText = `
-        This is a test article with the Table keyword, 
-        a Section keyword, and an LSI keyword.
-    `;
+    // Clear Button Handler
+    document.getElementById('clearBtn').addEventListener('click', () => {
+        const confirmed = confirm("Are you sure you want to clear all text and results?");
+        if (confirmed) {
+            document.getElementById('article').value = '';
+            document.getElementById('tableKeywords').value = '';
+            document.getElementById('lsiKeywords').value = '';
+            document.getElementById('sectionKeywords').value = '';
+            document.getElementById('highlightedArticle').innerHTML = '';
+            document.getElementById('resultsTable').innerHTML = '';
+        }
+    });
 
-    const highlightedText = testText
-        .replace(/Table keyword/g, '<span class="highlight table-highlight">Table keyword</span>')
-        .replace(/Section keyword/g, '<span class="highlight section-highlight">Section keyword</span>')
-        .replace(/LSI keyword/g, '<span class="highlight lsi-highlight">LSI keyword</span>');
-
-    document.getElementById('highlightedArticle').innerHTML = highlightedText.trim();
+    // Sample Highlight Preview (Only if nothing is already there)
+    const articleContent = document.getElementById('highlightedArticle').innerHTML.trim();
+    if (!articleContent) {
+        const testText = `
+            This is a <span class="highlight table-highlight">table keyword</span>, 
+            a <span class="highlight lsi-highlight">LSI keyword</span>, and 
+            a <span class="highlight section-highlight">section keyword</span>.
+        `;
+        document.getElementById('highlightedArticle').innerHTML = testText.trim();
+    }
 });
-
