@@ -154,4 +154,20 @@ th {
     .container {
         flex-direction: column;
     }
+
+.btn-teal {
+  padding: 8px 16px;
+  background-color: #14b8a6; /* Teal 500 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 10px;
+}
+
+.btn-teal:hover {
+  background-color: #0d9488; /* Teal 600 */
+    }
+
 }
