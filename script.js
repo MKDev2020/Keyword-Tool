@@ -2,7 +2,7 @@ document.getElementById('countBtn').addEventListener('click', countKeywords);
 document.getElementById('copyBtn').addEventListener('click', copyResults);
 
 function countKeywords() {
-    const article = document.getElementById('article').value.toLowerCase();
+    const article = document.getElementById('article').value;
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
     const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
@@ -13,199 +13,66 @@ function countKeywords() {
     }
     
     const results = [];
+    const articleLower = article.toLowerCase();
     
-    // Count table keywords
-    tableKeywords.forEach(keyword => {
-        const count = countExactMatches(article, keyword);
-        results.push({
-            keyword,
-            count,
-            category: 'Table',
-            class: 'table-keyword'
-        });
+    // Count keywords with overlap protection
+    const allKeywords = [
+        ...tableKeywords.map(kw => ({ kw, category: 'Table', class: 'table-highlight' })),
+        ...lsiKeywords.map(kw => ({ kw, category: 'LSI', class: 'lsi-highlight' })),
+        ...sectionKeywords.map(kw => ({ kw, category: 'Section', class: 'section-highlight' }))
+    ];
+    
+    // Sort by longest first to prevent partial matches
+    allKeywords.sort((a, b) => b.kw.length - a.kw.length);
+    
+    const occupiedPositions = [];
+    
+    allKeywords.forEach(({ kw, category, class: className }) => {
+        const lowerKW = kw.toLowerCase();
+        let count = 0;
+        let pos = articleLower.indexOf(lowerKW);
+        
+        while (pos > -1) {
+            const endPos = pos + kw.length;
+            
+            if (!isPositionOccupied(pos, endPos, occupiedPositions)) {
+                count++;
+                occupiedPositions.push([pos, endPos]);
+            }
+            
+            pos = articleLower.indexOf(lowerKW, endPos);
+        }
+        
+        if (count > 0) {
+            results.push({
+                keyword: kw,
+                count,
+                category,
+                class: className.replace('-highlight', '-keyword')
+            });
+        }
     });
     
-    // Count LSI keywords
-    lsiKeywords.forEach(keyword => {
-        const count = countExactMatches(article, keyword);
-        results.push({
-            keyword,
-            count,
-            category: 'LSI',
-            class: 'lsi-keyword'
-        });
-    });
-    
-    // Count section keywords
-    sectionKeywords.forEach(keyword => {
-        const count = countExactMatches(article, keyword);
-        results.push({
-            keyword,
-            count,
-            category: 'Section',
-            class: 'section-keyword'
-        });
-    });
-    
-    displayResults(results);
+    displayResults(results, article);
     displaySummary(results);
 }
 
 function parseKeywords(keywordString) {
-    return keywordString.split(',')
-        .map(keyword => keyword.trim().toLowerCase())
-        .filter(keyword => keyword.length > 0);
+    return keywordString.split(/[\n,]/)
+        .map(keyword => keyword.trim())
+        .filter(keyword => keyword.length > 0)
+        .map(keyword => keyword.toLowerCase());
 }
 
-function countExactMatches(text, keyword) {
-    if (!keyword) return 0;
-    
-    // Use regex to find exact word matches (case insensitive)
-    const regex = new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'gi');
-    const matches = text.match(regex);
-    
-    return matches ? matches.length : 0;
+function isPositionOccupied(start, end, occupiedPositions) {
+    return occupiedPositions.some(([s, e]) => start < e && end > s);
 }
 
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function displayResults(results) {
-    const resultsTable = document.getElementById('resultsTable');
-    
-    if (results.length === 0) {
-        resultsTable.innerHTML = '<p>No keywords found.</p>';
-        return;
-    }
-    
-    let html = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Keyword</th>
-                    <th>Count</th>
-                    <th>Category</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-    
-    results.forEach(item => {
-        html += `
-            <tr class="${item.class}">
-                <td>${item.keyword}</td>
-                <td>${item.count}</td>
-                <td>${item.category}</td>
-            </tr>
-        `;
-    });
-    
-    html += `
-            </tbody>
-        </table>
-    `;
-    
-    resultsTable.innerHTML = html;
-}
-
-function displaySummary(results) {
-    const summaryContent = document.getElementById('summaryContent');
-    
-    if (results.length === 0) {
-        summaryContent.innerHTML = '<p>No keywords to summarize.</p>';
-        return;
-    }
-    
-    // Calculate totals by category
-    const tableTotal = results.filter(r => r.category === 'Table').reduce((sum, r) => sum + r.count, 0);
-    const lsiTotal = results.filter(r => r.category === 'LSI').reduce((sum, r) => sum + r.count, 0);
-    const sectionTotal = results.filter(r => r.category === 'Section').reduce((sum, r) => sum + r.count, 0);
-    const grandTotal = tableTotal + lsiTotal + sectionTotal;
-    
-    // Find top keywords
-    const sortedResults = [...results].sort((a, b) => b.count - a.count);
-    const topKeywords = sortedResults.slice(0, 5);
-    
-    let html = `
-        <p><strong>Total Keywords Found:</strong> ${grandTotal}</p>
-        <p><strong>By Category:</strong></p>
-        <ul>
-            <li>Table: ${tableTotal}</li>
-            <li>LSI: ${lsiTotal}</li>
-            <li>Section: ${sectionTotal}</li>
-        </ul>
-        <p><strong>Top Keywords:</strong></p>
-        <ol>
-    `;
-    
-    topKeywords.forEach(item => {
-        html += `<li>${item.keyword} (${item.count} times, ${item.category})</li>`;
-    });
-    
-    html += `</ol>`;
-    
-    summaryContent.innerHTML = html;
-}
-
-function copyResults() {
-    const resultsTable = document.getElementById('resultsTable');
-    const summaryContent = document.getElementById('summaryContent');
-    
-    if (!resultsTable.innerHTML && !summaryContent.innerHTML) {
-        alert('No results to copy. Please run the keyword count first.');
-        return;
-    }
-    
-    const textToCopy = resultsTable.innerText + '\n\n' + summaryContent.innerText;
-    
-    navigator.clipboard.writeText(textToCopy)
-        .then(() => {
-            alert('Results copied to clipboard!');
-        })
-        .catch(err => {
-            console.error('Failed to copy: ', err);
-            alert('Failed to copy results. Please try again.');
-        });
-}
-// script.js
-// Updated parseKeywords function
-function parseKeywords(keywordString) {
-    return keywordString.split(/[,\n]/)
-        .map(keyword => keyword.trim().toLowerCase())
-        .filter(keyword => keyword.length > 0);
-}
-
-// New function to highlight text
-function highlightKeywords(originalText, results) {
-    let highlightedText = originalText;
-    
-    // Create a map of keywords with their highlight classes
-    const highlightMap = {};
-    results.forEach(item => {
-        highlightMap[item.keyword] = item.class.replace('-keyword', '-highlight');
-    });
-    
-    // Sort keywords by length (longest first) to prevent partial highlighting
-    const sortedKeywords = Object.keys(highlightMap).sort((a, b) => b.length - a.length);
-    
-    sortedKeywords.forEach(keyword => {
-        const regex = new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'gi');
-        highlightedText = highlightedText.replace(regex, match => {
-            return `<span class="highlight ${highlightMap[keyword.toLowerCase()]}">${match}</span>`;
-        });
-    });
-    
-    return highlightedText;
-}
-
-// Updated displayResults function
-function displayResults(results) {
+function displayResults(results, originalArticle) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
-    const originalArticle = document.getElementById('article').value;
     
-    // Display highlighted article
+    // Highlight article
     articleElement.innerHTML = highlightKeywords(originalArticle, results);
     
     // Create results table
@@ -229,10 +96,8 @@ function displayResults(results) {
     
     results.forEach(item => {
         html += `
-            <tr class="${item.class}">
-                <td>
-                    <div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div>
-                </td>
+            <tr>
+                <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
                 <td>${item.keyword}</td>
                 <td>${item.count}</td>
                 <td>${item.category}</td>
@@ -240,12 +105,76 @@ function displayResults(results) {
         `;
     });
     
-    html += `
-            </tbody>
-        </table>
-    `;
-    
+    html += `</tbody></table>`;
     resultsTable.innerHTML = html;
 }
 
-// Keep the rest of the existing JavaScript code the same
+function highlightKeywords(text, results) {
+    let highlighted = text;
+    const occupied = [];
+    
+    // Process longer keywords first
+    results.sort((a, b) => b.keyword.length - a.keyword.length);
+    
+    results.forEach(item => {
+        const regex = new RegExp(`\\b${escapeRegExp(item.keyword)}\\b`, 'gi');
+        highlighted = highlighted.replace(regex, match => {
+            const lowerMatch = match.toLowerCase();
+            const pos = highlighted.toLowerCase().indexOf(lowerMatch);
+            const endPos = pos + match.length;
+            
+            if (occupied.some(([s, e]) => pos < e && endPos > s)) {
+                return match;
+            }
+            
+            occupied.push([pos, endPos]);
+            return `<span class="highlight ${item.class.replace('-keyword', '-highlight')}">${match}</span>`;
+        });
+    });
+    
+    return highlighted;
+}
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function displaySummary(results) {
+    const summaryContent = document.getElementById('summaryContent');
+    
+    if (!results.length) {
+        summaryContent.innerHTML = '<p>No keywords to summarize.</p>';
+        return;
+    }
+    
+    const totals = results.reduce((acc, { category, count }) => {
+        acc[category] = (acc[category] || 0) + count;
+        return acc;
+    }, {});
+    
+    const sorted = [...results].sort((a, b) => b.count - a.count);
+    
+    let html = `
+        <p><strong>Total Keywords Found:</strong> ${Object.values(totals).reduce((a, b) => a + b, 0)}</p>
+        <p><strong>By Category:</strong></p>
+        <ul>
+            ${Object.entries(totals).map(([cat, total]) => `<li>${cat}: ${total}</li>`).join('')}
+        </ul>
+        <p><strong>Top 5 Keywords:</strong></p>
+        <ol>
+            ${sorted.slice(0, 5).map(item => `<li>${item.keyword} (${item.count}×, ${item.category})</li>`).join('')}
+        </ol>
+    `;
+    
+    summaryContent.innerHTML = html;
+}
+
+function copyResults() {
+    const articleText = document.getElementById('highlightedArticle').textContent;
+    const tableText = document.getElementById('resultsTable').textContent;
+    const textToCopy = `${articleText}\n\n${tableText}`;
+    
+    navigator.clipboard.writeText(textToCopy)
+        .then(() => alert('Results copied!'))
+        .catch(err => alert('Copy failed. Please try again.'));
+}
