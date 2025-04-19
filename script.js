@@ -1,6 +1,7 @@
+Final Working JS code:
+
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('countBtn').addEventListener('click', countKeywords);
-    document.getElementById('copyBtn').addEventListener('click', copyFormattedArticle);
 });
 
 function countKeywords() {
@@ -107,6 +108,7 @@ function displayResults(results, workingText, placeholders) {
         highlightedText = highlightedText.replace(p.placeholder, span);
     });
 
+    console.log(highlightedText);
     articleElement.innerHTML = highlightedText.trim();
 
     // Build results table
@@ -178,23 +180,3 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('highlightedArticle').innerHTML = testText.trim();
     }
 });
-
-// Copy Formatted Article
-function copyFormattedArticle() {
-    const articleContent = document.getElementById('highlightedArticle').innerHTML;
-
-    if (!articleContent) {
-        alert('There is no formatted article to copy.');
-        return;
-    }
-
-    // Create a temporary textarea element to copy the content
-    const tempTextArea = document.createElement('textarea');
-    tempTextArea.value = articleContent;
-    document.body.appendChild(tempTextArea);
-    tempTextArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(tempTextArea);
-
-    alert('Formatted article copied to clipboard!');
-}
