@@ -168,3 +168,84 @@ function copyResults() {
             alert('Failed to copy results. Please try again.');
         });
 }
+// script.js
+// Updated parseKeywords function
+function parseKeywords(keywordString) {
+    return keywordString.split(/[,\n]/)
+        .map(keyword => keyword.trim().toLowerCase())
+        .filter(keyword => keyword.length > 0);
+}
+
+// New function to highlight text
+function highlightKeywords(originalText, results) {
+    let highlightedText = originalText;
+    
+    // Create a map of keywords with their highlight classes
+    const highlightMap = {};
+    results.forEach(item => {
+        highlightMap[item.keyword] = item.class.replace('-keyword', '-highlight');
+    });
+    
+    // Sort keywords by length (longest first) to prevent partial highlighting
+    const sortedKeywords = Object.keys(highlightMap).sort((a, b) => b.length - a.length);
+    
+    sortedKeywords.forEach(keyword => {
+        const regex = new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'gi');
+        highlightedText = highlightedText.replace(regex, match => {
+            return `<span class="highlight ${highlightMap[keyword.toLowerCase()]}">${match}</span>`;
+        });
+    });
+    
+    return highlightedText;
+}
+
+// Updated displayResults function
+function displayResults(results) {
+    const resultsTable = document.getElementById('resultsTable');
+    const articleElement = document.getElementById('highlightedArticle');
+    const originalArticle = document.getElementById('article').value;
+    
+    // Display highlighted article
+    articleElement.innerHTML = highlightKeywords(originalArticle, results);
+    
+    // Create results table
+    if (results.length === 0) {
+        resultsTable.innerHTML = '<p>No keywords found.</p>';
+        return;
+    }
+    
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Color</th>
+                    <th>Keyword</th>
+                    <th>Count</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    results.forEach(item => {
+        html += `
+            <tr class="${item.class}">
+                <td>
+                    <div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div>
+                </td>
+                <td>${item.keyword}</td>
+                <td>${item.count}</td>
+                <td>${item.category}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+    `;
+    
+    resultsTable.innerHTML = html;
+}
+
+// Keep the rest of the existing JavaScript code the same
