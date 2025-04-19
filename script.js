@@ -7,60 +7,60 @@ function countKeywords() {
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
     const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
-    
+
     if (!article) {
         alert('Please paste an article first.');
         return;
     }
 
-    // Process keywords by category in order (Table -> Section -> LSI)
     const categories = [
         { name: 'Table', keywords: tableKeywords, colorClass: 'table-highlight' },
         { name: 'Section', keywords: sectionKeywords, colorClass: 'section-highlight' },
         { name: 'LSI', keywords: lsiKeywords, colorClass: 'lsi-highlight' }
     ];
 
-    // EXACT counting/highlighting logic from your working version
     let workingText = ` ${article} `;
     const placeholders = [];
     const keywordCounts = {};
     const results = [];
 
-    // Process each category in order
     categories.forEach(category => {
-        // Sort keywords by length (longest first)
         const sortedKeywords = [...category.keywords].sort((a, b) => b.length - a.length);
-        
+
         sortedKeywords.forEach(keyword => {
             const lowerKW = keyword.toLowerCase();
-            keywordCounts[lowerKW] = 0; // Initialize counter
-            
-            // EXACT regex pattern from your working version
+            keywordCounts[lowerKW] = 0;
+
             const pattern = new RegExp(`(?<!\\w)${escapeRegExp(lowerKW)}(?!\\w)`, 'gi');
             let match;
-            
+            let updatedText = '';
+            let lastIndex = 0;
+
             while ((match = pattern.exec(workingText)) !== null) {
                 const placeholder = `{{kw${placeholders.length}}}`;
                 placeholders.push({
                     placeholder,
-                    keyword: match[0], // Preserve original case
+                    keyword: match[0],
                     colorClass: category.colorClass,
                     original: match[0],
                     start: match.index,
                     category: category.name
                 });
 
-                workingText = workingText.substring(0, match.index) + 
-                            placeholder + 
-                            workingText.substring(match.index + match[0].length);
-                pattern.lastIndex = match.index + placeholder.length;
-                
+                // Replace text up to match, insert placeholder
+                updatedText += workingText.substring(lastIndex, match.index) + placeholder;
+                lastIndex = match.index + match[0].length;
+
                 keywordCounts[lowerKW]++;
             }
 
+            // Append the remaining text
+            updatedText += workingText.substring(lastIndex);
+            workingText = updatedText;
+
             if (keywordCounts[lowerKW] > 0) {
                 results.push({
-                    keyword: keyword, // Preserve original casing
+                    keyword: keyword,
                     count: keywordCounts[lowerKW],
                     category: category.name,
                     class: category.colorClass.replace('-highlight', '-keyword')
@@ -69,8 +69,9 @@ function countKeywords() {
         });
     });
 
-    displayResults(results, article, placeholders);
+    displayResults(results, workingText, placeholders);
 }
+
 
 function parseKeywords(keywordString) {
     return keywordString.split(/[\n,]/)
@@ -78,27 +79,24 @@ function parseKeywords(keywordString) {
         .filter(keyword => keyword.length > 0);
 }
 
-function displayResults(results, originalArticle, placeholders) {
+function displayResults(results, workingText, placeholders) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
-    
-    // Highlight article using EXACT method from your working version
-    let highlightedText = ` ${originalArticle} `;
-    placeholders.sort((a, b) => a.start - b.start);
-    for (let p of placeholders) {
-        highlightedText = highlightedText.replace(
-            p.placeholder,
-            `<span class="highlight ${p.colorClass}">${p.original}</span>`
-        );
-    }
+
+    // Replace placeholders with highlighted spans
+    let highlightedText = workingText;
+    placeholders.forEach(p => {
+        const span = `<span class="highlight ${p.colorClass}">${p.original}</span>`;
+        highlightedText = highlightedText.replace(p.placeholder, span);
+    });
+
     articleElement.innerHTML = highlightedText.trim();
-    
-    // Create grouped results table
+
     if (results.length === 0) {
         resultsTable.innerHTML = '<p>No keywords found.</p>';
         return;
     }
-    
+
     let html = `
         <table>
             <thead>
@@ -111,8 +109,7 @@ function displayResults(results, originalArticle, placeholders) {
             </thead>
             <tbody>
     `;
-    
-    // Group by category (Table -> Section -> LSI)
+
     const categoryOrder = ['Table', 'Section', 'LSI'];
     categoryOrder.forEach(category => {
         const categoryResults = results.filter(r => r.category === category);
@@ -122,7 +119,7 @@ function displayResults(results, originalArticle, placeholders) {
                     <td colspan="4"><strong>${category} Keywords</strong></td>
                 </tr>
             `;
-            
+
             categoryResults.forEach(item => {
                 html += `
                     <tr>
@@ -135,7 +132,7 @@ function displayResults(results, originalArticle, placeholders) {
             });
         }
     });
-    
+
     html += `</tbody></table>`;
     resultsTable.innerHTML = html;
 }
