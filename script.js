@@ -19,108 +19,99 @@ function countKeywords() {
         { name: 'LSI', keywords: lsiKeywords, colorClass: 'lsi-highlight' }
     ];
 
-    // Store results
-    const results = [];
+    let workingText = ` ${article} `;
     const placeholders = [];
-    let workingText = article;
-    const keywordMap = {}; // To track usage and store original keyword
+    const keywordCounts = {};
+    const results = [];
 
-    categories.forEach(category => {
-        const sortedKeywords = [...category.keywords].sort((a, b) => b.length - a.length);
+    let allKeywords = [];
+    categories.forEach((cat, catIndex) => {
+        const sorted = [...cat.keywords].sort((a, b) => b.length - a.length);
+        sorted.forEach(k => {
+            const cleaned = k.trim().toLowerCase();
+            allKeywords.push({
+                keyword: k.trim(),
+                lower: cleaned,
+                colorClass: cat.colorClass,
+                category: cat.name,
+                priority: catIndex
+            });
+            keywordCounts[cleaned] = 0;
+        });
+    });
 
-        sortedKeywords.forEach((keyword, i) => {
-            const escaped = escapeRegExp(keyword);
-            const pattern = new RegExp(`\\b${escaped}\\b`, 'gi');
+    allKeywords.sort((a, b) => {
+        if (b.lower.length !== a.lower.length) return b.lower.length - a.lower.length;
+        return a.priority - b.priority;
+    });
 
-            let matchCount = 0;
-            let match;
+    allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
+        const pattern = new RegExp(`\\b${escapeRegExp(lower)}\\b`, 'gi');
 
-            while ((match = pattern.exec(workingText)) !== null) {
-                const placeholder = `{{kw${placeholders.length}}}`;
-                const start = match.index;
-                const end = start + match[0].length;
+        let match;
+        while ((match = pattern.exec(workingText)) !== null) {
+            const placeholder = `{{kw${placeholders.length}}}`;
+            placeholders.push({
+                placeholder,
+                keyword: match[0],
+                colorClass,
+                original: match[0],
+                start: match.index,
+                category
+            });
 
-                placeholders.push({
-                    placeholder,
-                    keyword: match[0],
-                    colorClass: category.colorClass,
-                    start: start,
-                    original: match[0]
-                });
+            workingText = workingText.substring(0, match.index) +
+                          placeholder +
+                          workingText.substring(match.index + match[0].length);
 
-                workingText =
-                    workingText.slice(0, start) +
-                    placeholder +
-                    workingText.slice(end);
+            pattern.lastIndex = match.index + placeholder.length;
+            keywordCounts[lower]++;
+        }
+    });
 
-                pattern.lastIndex = start + placeholder.length;
-                matchCount++;
-            }
-
-            const lowerKey = keyword.toLowerCase();
-            keywordMap[lowerKey] = {
+    // Collect results (even those with 0 count)
+    const unique = new Set();
+    allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
+        if (!unique.has(lower)) {
+            unique.add(lower);
+            results.push({
                 keyword,
-                count: matchCount,
-                category: category.name,
-                class: category.colorClass.replace('-highlight', '-keyword')
-            };
-        });
+                count: keywordCounts[lower],
+                category,
+                class: colorClass.replace('-highlight', '-keyword')
+            });
+        }
     });
 
-    // Add zero-count keywords
-    categories.forEach(category => {
-        category.keywords.forEach(keyword => {
-            const lowerKey = keyword.toLowerCase();
-            if (!keywordMap[lowerKey]) {
-                keywordMap[lowerKey] = {
-                    keyword,
-                    count: 0,
-                    category: category.name,
-                    class: category.colorClass.replace('-highlight', '-keyword')
-                };
-            }
-        });
-    });
-
-    const resultArray = Object.values(keywordMap);
-    displayResults(resultArray, article, placeholders);
+    displayResults(results, article, placeholders);
 }
 
 function parseKeywords(keywordString) {
     return keywordString
         .split(/[\n,]/)
-        .map(k => k.trim())
-        .filter(k => k.length > 0);
-}
-
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        .map(keyword => keyword.trim().toLowerCase())
+        .filter(keyword => keyword.length > 0);
 }
 
 function displayResults(results, originalArticle, placeholders) {
-    const articleElement = document.getElementById('highlightedArticle');
     const resultsTable = document.getElementById('resultsTable');
+    const articleElement = document.getElementById('highlightedArticle');
 
-    // Sort placeholders by position for consistent replacement
+    let highlightedText = ` ${originalArticle} `;
     placeholders.sort((a, b) => a.start - b.start);
-
-    let highlighted = originalArticle;
     for (let p of placeholders) {
-        highlighted = highlighted.replace(
+        highlightedText = highlightedText.replace(
             p.placeholder,
-            `<span class="highlight ${p.colorClass}">${p.keyword}</span>`
+            `<span class="highlight ${p.colorClass}">${p.original}</span>`
         );
     }
-
-    articleElement.innerHTML = highlighted;
+    articleElement.innerHTML = highlightedText.trim();
 
     if (results.length === 0) {
         resultsTable.innerHTML = '<p>No keywords found.</p>';
         return;
     }
 
-    // Build results table
-    const categoryOrder = ['Table', 'Section', 'LSI'];
     let html = `
         <table>
             <thead>
@@ -134,17 +125,22 @@ function displayResults(results, originalArticle, placeholders) {
             <tbody>
     `;
 
-    categoryOrder.forEach(cat => {
-        const group = results.filter(r => r.category === cat);
-        if (group.length > 0) {
-            html += `<tr class="category-header"><td colspan="4"><strong>${cat} Keywords</strong></td></tr>`;
-            group.forEach(r => {
+    const categoryOrder = ['Table', 'Section', 'LSI'];
+    categoryOrder.forEach(category => {
+        const categoryResults = results.filter(r => r.category === category);
+        if (categoryResults.length > 0) {
+            html += `
+                <tr class="category-header">
+                    <td colspan="4"><strong>${category} Keywords</strong></td>
+                </tr>
+            `;
+            categoryResults.forEach(item => {
                 html += `
                     <tr>
-                        <td><div class="color-swatch ${r.class.replace('-keyword', '-highlight')}"></div></td>
-                        <td>${r.keyword}</td>
-                        <td>${r.count}</td>
-                        <td>${r.category}</td>
+                        <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
+                        <td>${item.keyword}</td>
+                        <td>${item.count}</td>
+                        <td>${item.category}</td>
                     </tr>
                 `;
             });
@@ -153,4 +149,8 @@ function displayResults(results, originalArticle, placeholders) {
 
     html += `</tbody></table>`;
     resultsTable.innerHTML = html;
+}
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
