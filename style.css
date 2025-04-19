@@ -23,6 +23,7 @@ h1 {
 .input-group {
     flex: 1;
     min-width: 300px;
+    margin-bottom: 15px;
 }
 
 label {
@@ -39,6 +40,7 @@ textarea {
     border-radius: 4px;
     resize: vertical;
     font-family: inherit;
+    line-height: 1.5;
 }
 
 .button-group {
@@ -92,50 +94,21 @@ th {
     background-color: #f2f2f2;
 }
 
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.table-keyword {
-    background-color: #fffacd; /* Yellow for Table */
-}
-
-.lsi-keyword {
-    background-color: #e6f7ff; /* Light blue for LSI */
-}
-
-.section-keyword {
-    background-color: #e6ffe6; /* Light green for Section */
-}
-
-.summary {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-}
-
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-
-        /* style.css */
-/* Add these new styles */
 .highlight {
     padding: 2px 4px;
     border-radius: 3px;
 }
 
 .table-highlight {
-    background-color: #fffacd; /* Yellow */
+    background-color: #fffacd;
 }
 
 .lsi-highlight {
-    background-color: #e6f7ff; /* Light blue */
+    background-color: #e6f7ff;
 }
 
 .section-highlight {
-    background-color: #e6ffe6; /* Light green */
+    background-color: #e6ffe6;
 }
 
 .color-swatch {
@@ -152,7 +125,12 @@ tr:nth-child(even) {
     padding: 15px;
     margin-bottom: 20px;
     white-space: pre-wrap;
-    
+    font-family: inherit;
+    line-height: inherit;
 }
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
     }
 }
