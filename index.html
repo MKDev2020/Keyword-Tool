@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,18 +19,18 @@
     
     <div class="container">
         <div class="input-group">
-            <label for="tableKeywords">Table Keywords (comma separated):</label>
-            <textarea id="tableKeywords" placeholder="Enter Table keywords separated by commas"></textarea>
+            <label for="tableKeywords">Table Keywords (one per line or comma separated):</label>
+            <textarea id="tableKeywords" placeholder="Enter Table keywords"></textarea>
         </div>
         
         <div class="input-group">
-            <label for="lsiKeywords">LSI Keywords (comma separated):</label>
-            <textarea id="lsiKeywords" placeholder="Enter LSI keywords separated by commas"></textarea>
+            <label for="lsiKeywords">LSI Keywords (one per line or comma separated):</label>
+            <textarea id="lsiKeywords" placeholder="Enter LSI keywords"></textarea>
         </div>
         
         <div class="input-group">
-            <label for="sectionKeywords">Section Keywords (comma separated):</label>
-            <textarea id="sectionKeywords" placeholder="Enter Section keywords separated by commas"></textarea>
+            <label for="sectionKeywords">Section Keywords (one per line or comma separated):</label>
+            <textarea id="sectionKeywords" placeholder="Enter Section keywords"></textarea>
         </div>
     </div>
     
@@ -39,13 +40,11 @@
     </div>
     
     <div class="results">
+        <h2>Highlighted Article</h2>
+        <div id="highlightedArticle"></div>
+        
         <h2>Keyword Count Results</h2>
         <div id="resultsTable"></div>
-    </div>
-    
-    <div class="summary">
-        <h3>Summary</h3>
-        <div id="summaryContent"></div>
     </div>
     
     <script src="script.js"></script>
