@@ -24,13 +24,19 @@ function countKeywords() {
     const keywordCounts = {};
     const results = [];
 
+    // Initialize all keyword counts to 0
+    categories.forEach(category => {
+        category.keywords.forEach(keyword => {
+            const lowerKW = keyword.toLowerCase();
+            keywordCounts[lowerKW] = 0;  // Set initial count to 0
+        });
+    });
+
     categories.forEach(category => {
         const sortedKeywords = [...category.keywords].sort((a, b) => b.length - a.length);
 
         sortedKeywords.forEach(keyword => {
             const lowerKW = keyword.toLowerCase();
-            keywordCounts[lowerKW] = 0;
-
             const pattern = new RegExp(`(?<!\\w)${escapeRegExp(lowerKW)}(?!\\w)`, 'gi');
             let match;
 
@@ -52,18 +58,11 @@ function countKeywords() {
                 pattern.lastIndex = match.index + placeholder.length;
                 keywordCounts[lowerKW]++;
             }
-
-            // Always add to results, even if count = 0
-            results.push({
-                keyword: keyword,
-                count: keywordCounts[lowerKW],
-                category: category.name,
-                class: category.colorClass.replace('-highlight', '-keyword')
-            });
         });
     });
 
-    displayResults(results, article, placeholders);
+    // Create the highlighted article with the placeholders
+    displayResults(results, article, placeholders, keywordCounts);
 }
 
 function parseKeywords(keywordString) {
@@ -72,11 +71,11 @@ function parseKeywords(keywordString) {
         .filter(keyword => keyword.length > 0);
 }
 
-function displayResults(results, originalArticle, placeholders) {
+function displayResults(results, originalArticle, placeholders, keywordCounts) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
 
-    // Highlight article using EXACT method from your working version
+    // Highlight article using exact matches (handling placeholders)
     let highlightedText = ` ${originalArticle} `;
     placeholders.sort((a, b) => a.start - b.start);
     for (let p of placeholders) {
@@ -87,8 +86,8 @@ function displayResults(results, originalArticle, placeholders) {
     }
     articleElement.innerHTML = highlightedText.trim();
 
-    // Create grouped results table
-    if (results.length === 0) {
+    // Build the results table
+    if (Object.keys(keywordCounts).length === 0) {
         resultsTable.innerHTML = '<p>No keywords found.</p>';
         return;
     }
@@ -109,7 +108,16 @@ function displayResults(results, originalArticle, placeholders) {
     // Group by category (Table -> Section -> LSI)
     const categoryOrder = ['Table', 'Section', 'LSI'];
     categoryOrder.forEach(category => {
-        const categoryResults = results.filter(r => r.category === category);
+        const categoryResults = [];
+
+        if (category === 'Table') {
+            categoryResults.push(...tableKeywords);
+        } else if (category === 'Section') {
+            categoryResults.push(...sectionKeywords);
+        } else if (category === 'LSI') {
+            categoryResults.push(...lsiKeywords);
+        }
+
         if (categoryResults.length > 0) {
             html += `
                 <tr class="category-header">
@@ -117,13 +125,16 @@ function displayResults(results, originalArticle, placeholders) {
                 </tr>
             `;
 
-            categoryResults.forEach(item => {
+            categoryResults.forEach(keyword => {
+                const keywordLower = keyword.toLowerCase();
+                const count = keywordCounts[keywordLower] || 0;
+
                 html += `
                     <tr>
-                        <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
-                        <td>${item.keyword}</td>
-                        <td>${item.count}</td>
-                        <td>${item.category}</td>
+                        <td><div class="color-swatch ${category.toLowerCase()}-highlight"></div></td>
+                        <td>${keyword}</td>
+                        <td>${count}</td>
+                        <td>${category}</td>
                     </tr>
                 `;
             });
