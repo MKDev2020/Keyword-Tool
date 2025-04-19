@@ -106,6 +106,7 @@ function displayResults(results, originalArticle, placeholders) {
         highlightedText = highlightedText.replace(p.placeholder, span);
     });
 
+    console.log(highlightedText);
     articleElement.innerHTML = highlightedText.trim();
 
     // Build results table
