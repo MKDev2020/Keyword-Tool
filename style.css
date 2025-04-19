@@ -97,18 +97,19 @@ th {
 .highlight {
     padding: 2px 4px;
     border-radius: 3px;
+    font-weight: bold;
 }
 
 .table-highlight {
-    background-color: #fffacd;
+    background-color: #FFEE93; /* Deeper yellow */
 }
 
 .lsi-highlight {
-    background-color: #e6f7ff;
+    background-color: #B3E0FF; /* Deeper light blue */
 }
 
 .section-highlight {
-    background-color: #e6ffe6;
+    background-color: #A3E4A3; /* Deeper light green */
 }
 
 .color-swatch {
