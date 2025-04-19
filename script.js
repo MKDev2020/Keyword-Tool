@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
@@ -24,72 +24,81 @@ function countKeywords() {
     const keywordCounts = {};
     const results = [];
 
-    categories.forEach(category => {
-        const sortedKeywords = [...category.keywords].sort((a, b) => b.length - a.length);
-
-        sortedKeywords.forEach(keyword => {
-            const lowerKW = keyword.toLowerCase();
-            keywordCounts[lowerKW] = 0;
-
-            const pattern = new RegExp(`(?<!\\w)${escapeRegExp(lowerKW)}(?!\\w)`, 'gi');
-            let match;
-            let updatedText = '';
-            let lastIndex = 0;
-
-            while ((match = pattern.exec(workingText)) !== null) {
-                const placeholder = `{{kw${placeholders.length}}}`;
-                placeholders.push({
-                    placeholder,
-                    keyword: match[0],
-                    colorClass: category.colorClass,
-                    original: match[0],
-                    start: match.index,
-                    category: category.name
-                });
-
-                // Replace text up to match, insert placeholder
-                updatedText += workingText.substring(lastIndex, match.index) + placeholder;
-                lastIndex = match.index + match[0].length;
-
-                keywordCounts[lowerKW]++;
-            }
-
-            // Append the remaining text
-            updatedText += workingText.substring(lastIndex);
-            workingText = updatedText;
-
-            if (keywordCounts[lowerKW] > 0) {
-                results.push({
-                    keyword: keyword,
-                    count: keywordCounts[lowerKW],
-                    category: category.name,
-                    class: category.colorClass.replace('-highlight', '-keyword')
-                });
-            }
+    let allKeywords = [];
+    categories.forEach((cat, catIndex) => {
+        const sorted = [...cat.keywords].sort((a, b) => b.length - a.length);
+        sorted.forEach(k => {
+            allKeywords.push({
+                keyword: k.trim(),
+                lower: k.trim().toLowerCase(),
+                colorClass: cat.colorClass,
+                category: cat.name,
+                priority: catIndex
+            });
         });
     });
 
-    displayResults(results, workingText, placeholders);
+    allKeywords.sort((a, b) => {
+        if (b.lower.length !== a.lower.length) return b.lower.length - a.lower.length;
+        return a.priority - b.priority;
+    });
+
+    allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
+        const pattern = new RegExp(`\\b${escapeRegExp(lower)}\\b`, 'gi');
+        keywordCounts[lower] = 0;
+
+        let match;
+        while ((match = pattern.exec(workingText)) !== null) {
+            const placeholder = `{{kw${placeholders.length}}}`;
+            placeholders.push({
+                placeholder,
+                keyword: match[0],
+                colorClass,
+                original: match[0],
+                start: match.index,
+                category
+            });
+
+            workingText = workingText.substring(0, match.index) +
+                          placeholder +
+                          workingText.substring(match.index + match[0].length);
+
+            pattern.lastIndex = match.index + placeholder.length;
+            keywordCounts[lower]++;
+        }
+
+        if (keywordCounts[lower] > 0) {
+            results.push({
+                keyword,
+                count: keywordCounts[lower],
+                category,
+                class: colorClass.replace('-highlight', '-keyword')
+            });
+        }
+    });
+
+    displayResults(results, article, placeholders);
 }
 
-
 function parseKeywords(keywordString) {
-    return keywordString.split(/[\n,]/)
-        .map(keyword => keyword.trim())
+    return keywordString
+        .split(/[\n,]/)
+        .map(keyword => keyword.trim().toLowerCase())
         .filter(keyword => keyword.length > 0);
 }
 
-function displayResults(results, workingText, placeholders) {
+function displayResults(results, originalArticle, placeholders) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
 
-    // Replace placeholders with highlighted spans
-    let highlightedText = workingText;
-    placeholders.forEach(p => {
-        const span = `<span class="highlight ${p.colorClass}">${p.original}</span>`;
-        highlightedText = highlightedText.replace(p.placeholder, span);
-    });
-
+    let highlightedText = ` ${originalArticle} `;
+    placeholders.sort((a, b) => a.start - b.start);
+    for (let p of placeholders) {
+        highlightedText = highlightedText.replace(
+            p.placeholder,
+            `<span class="highlight ${p.colorClass}">${p.original}</span>`
+        );
+    }
     articleElement.innerHTML = highlightedText.trim();
 
     if (results.length === 0) {
@@ -119,7 +128,6 @@ function displayResults(results, workingText, placeholders) {
                     <td colspan="4"><strong>${category} Keywords</strong></td>
                 </tr>
             `;
-
             categoryResults.forEach(item => {
                 html += `
                     <tr>
