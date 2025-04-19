@@ -87,22 +87,18 @@ th {
 }
 
 .highlight {
-    padding: 2px 4px;
-    border-radius: 3px;
     font-weight: bold;
-    color: #000;
+    padding: 0 2px;
+    border-radius: 3px;
 }
-
 .table-highlight {
-    background-color: #FFEE93;
+    background-color: #ffeeba;
 }
-
 .lsi-highlight {
-    background-color: #B3E0FF;
+    background-color: #d4edda;
 }
-
 .section-highlight {
-    background-color: #A3E4A3;
+    background-color: #cce5ff;
 }
 
 .color-swatch {
