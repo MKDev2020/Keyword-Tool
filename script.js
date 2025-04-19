@@ -14,7 +14,7 @@ function countKeywords() {
         return;
     }
     
-    // Process all keywords together for accurate counting
+    // Process all keywords together for accurate counting-
     const allKeywords = [
         ...tableKeywords.map(kw => ({ kw, category: 'Table', class: 'table-highlight' })),
         ...lsiKeywords.map(kw => ({ kw, category: 'LSI', class: 'lsi-highlight' })),
