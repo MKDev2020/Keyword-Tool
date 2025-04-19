@@ -14,58 +14,69 @@ function countKeywords() {
         return;
     }
     
-    // Process all keywords together for accurate counting-
+    // Process all keywords together for accurate counting
     const allKeywords = [
         ...tableKeywords.map(kw => ({ kw, category: 'Table', class: 'table-highlight' })),
         ...lsiKeywords.map(kw => ({ kw, category: 'LSI', class: 'lsi-highlight' })),
         ...sectionKeywords.map(kw => ({ kw, category: 'Section', class: 'section-highlight' }))
     ];
     
-    // Sort by longest first to prevent partial matches
+    // Sort by longest first to prevent partial matches (from your working example)
     allKeywords.sort((a, b) => b.kw.length - a.kw.length);
     
     const results = [];
-    const articleLower = article.toLowerCase();
-    const occupiedPositions = [];
-    
+    let workingText = ` ${article} `; // Added spaces for better boundary matching
+    const placeholders = [];
+    const keywordCounts = {};
+
+    // Implement the counting logic from your working example
     allKeywords.forEach(({ kw, category, class: className }) => {
-        const lowerKW = kw.toLowerCase();
-        let count = 0;
-        let pos = articleLower.indexOf(lowerKW);
-        
-        while (pos > -1) {
-            const endPos = pos + kw.length;
-            
-            // Check if position is already occupied by a longer keyword
-            if (!isPositionOccupied(pos, endPos, occupiedPositions)) {
-                count++;
-                occupiedPositions.push([pos, endPos]);
-            }
-            
-            pos = articleLower.indexOf(lowerKW, endPos);
+        const pattern = new RegExp(`(?<!\\w)${escapeRegExp(kw)}(?!\\w)`, 'gi');
+        let match;
+
+        while ((match = pattern.exec(workingText)) !== null) {
+            const placeholder = `{{kw${placeholders.length}}}`;
+            placeholders.push({
+                placeholder,
+                keyword: match[0],
+                className,
+                original: match[0],
+                start: match.index,
+                category
+            });
+
+            workingText = workingText.substring(0, match.index) + 
+                         placeholder + 
+                         workingText.substring(match.index + match[0].length);
+            pattern.lastIndex = match.index + placeholder.length;
+
+            // Track counts per keyword
+            const key = kw.toLowerCase();
+            keywordCounts[key] = (keywordCounts[key] || 0) + 1;
         }
-        
-        if (count > 0) {
+    });
+
+    // Convert to our results format
+    allKeywords.forEach(({ kw, category, class: className }) => {
+        const key = kw.toLowerCase();
+        if (keywordCounts[key]) {
             results.push({
-                keyword: kw, // Preserve original keyword casing
-                count,
+                keyword: kw, // Preserve original casing
+                count: keywordCounts[key],
                 category,
                 class: className.replace('-highlight', '-keyword')
             });
         }
     });
-    
+
     displayResults(results, article);
 }
 
+// [Keep all other existing functions exactly the same]
 function parseKeywords(keywordString) {
     return keywordString.split(/[\n,]/)
         .map(keyword => keyword.trim())
         .filter(keyword => keyword.length > 0);
-}
-
-function isPositionOccupied(start, end, occupiedPositions) {
-    return occupiedPositions.some(([s, e]) => start < e && end > s);
 }
 
 function displayResults(results, originalArticle) {
@@ -114,28 +125,42 @@ function displayResults(results, originalArticle) {
 }
 
 function highlightKeywords(text, results) {
-    let highlighted = text;
-    const occupied = [];
+    let workingText = ` ${text} `;
+    const placeholders = [];
     
-    // Process longer keywords first
+    // Sort by longest first (from your working example)
     results.sort((a, b) => b.keyword.length - a.keyword.length);
     
     results.forEach(item => {
-        const regex = new RegExp(`\\b${escapeRegExp(item.keyword)}\\b`, 'gi');
-        highlighted = highlighted.replace(regex, match => {
-            const lowerMatch = match.toLowerCase();
-            const pos = highlighted.toLowerCase().indexOf(lowerMatch);
-            const endPos = pos + match.length;
-            
-            if (!isPositionOccupied(pos, endPos, occupied)) {
-                occupied.push([pos, endPos]);
-                return `<span class="highlight ${item.class.replace('-keyword', '-highlight')}">${match}</span>`;
-            }
-            return match;
-        });
+        const pattern = new RegExp(`(?<!\\w)${escapeRegExp(item.keyword)}(?!\\w)`, 'gi');
+        let match;
+
+        while ((match = pattern.exec(workingText)) !== null) {
+            const placeholder = `{{kw${placeholders.length}}}`;
+            placeholders.push({
+                placeholder,
+                className: item.class.replace('-keyword', '-highlight'),
+                original: match[0],
+                start: match.index
+            });
+
+            workingText = workingText.substring(0, match.index) + 
+                         placeholder + 
+                         workingText.substring(match.index + match[0].length);
+            pattern.lastIndex = match.index + placeholder.length;
+        }
     });
-    
-    return highlighted;
+
+    // Replace placeholders with spans
+    placeholders.sort((a, b) => a.start - b.start);
+    for (let p of placeholders) {
+        workingText = workingText.replace(
+            p.placeholder,
+            `<span class="highlight ${p.className}">${p.original}</span>`
+        );
+    }
+
+    return workingText.trim();
 }
 
 function escapeRegExp(string) {
