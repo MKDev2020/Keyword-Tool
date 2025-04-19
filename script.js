@@ -19,73 +19,108 @@ function countKeywords() {
         { name: 'LSI', keywords: lsiKeywords, colorClass: 'lsi-highlight' }
     ];
 
-    let workingText = ` ${article} `;
-    const placeholders = [];
-    const keywordCounts = {};
+    // Store results
     const results = [];
+    const placeholders = [];
+    let workingText = article;
+    const keywordMap = {}; // To track usage and store original keyword
 
     categories.forEach(category => {
         const sortedKeywords = [...category.keywords].sort((a, b) => b.length - a.length);
 
-        sortedKeywords.forEach(keyword => {
-            const lowerKW = keyword.toLowerCase();
-            keywordCounts[lowerKW] = 0;
+        sortedKeywords.forEach((keyword, i) => {
+            const escaped = escapeRegExp(keyword);
+            const pattern = new RegExp(`\\b${escaped}\\b`, 'gi');
 
-            const pattern = new RegExp(`(?<!\\w)${escapeRegExp(lowerKW)}(?!\\w)`, 'gi');
+            let matchCount = 0;
             let match;
+
             while ((match = pattern.exec(workingText)) !== null) {
                 const placeholder = `{{kw${placeholders.length}}}`;
+                const start = match.index;
+                const end = start + match[0].length;
+
                 placeholders.push({
                     placeholder,
                     keyword: match[0],
                     colorClass: category.colorClass,
-                    original: match[0],
-                    start: match.index
+                    start: start,
+                    original: match[0]
                 });
 
-                workingText = workingText.substring(0, match.index) +
+                workingText =
+                    workingText.slice(0, start) +
                     placeholder +
-                    workingText.substring(match.index + match[0].length);
-                pattern.lastIndex = match.index + placeholder.length;
+                    workingText.slice(end);
 
-                keywordCounts[lowerKW]++;
+                pattern.lastIndex = start + placeholder.length;
+                matchCount++;
             }
 
-            results.push({
-                keyword: keyword,
-                count: keywordCounts[lowerKW],
+            const lowerKey = keyword.toLowerCase();
+            keywordMap[lowerKey] = {
+                keyword,
+                count: matchCount,
                 category: category.name,
-                class: category.colorClass
-            });
+                class: category.colorClass.replace('-highlight', '-keyword')
+            };
         });
     });
 
-    displayResults(results, article, placeholders);
+    // Add zero-count keywords
+    categories.forEach(category => {
+        category.keywords.forEach(keyword => {
+            const lowerKey = keyword.toLowerCase();
+            if (!keywordMap[lowerKey]) {
+                keywordMap[lowerKey] = {
+                    keyword,
+                    count: 0,
+                    category: category.name,
+                    class: category.colorClass.replace('-highlight', '-keyword')
+                };
+            }
+        });
+    });
+
+    const resultArray = Object.values(keywordMap);
+    displayResults(resultArray, article, placeholders);
 }
 
 function parseKeywords(keywordString) {
     return keywordString
         .split(/[\n,]/)
-        .map(k => k.trim().toLowerCase())
+        .map(k => k.trim())
         .filter(k => k.length > 0);
 }
 
-function displayResults(results, originalArticle, placeholders) {
-    const resultsTable = document.getElementById('resultsTable');
-    const articleElement = document.getElementById('highlightedArticle');
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-    let highlightedText = ` ${originalArticle} `;
+function displayResults(results, originalArticle, placeholders) {
+    const articleElement = document.getElementById('highlightedArticle');
+    const resultsTable = document.getElementById('resultsTable');
+
+    // Sort placeholders by position for consistent replacement
     placeholders.sort((a, b) => a.start - b.start);
 
+    let highlighted = originalArticle;
     for (let p of placeholders) {
-        highlightedText = highlightedText.replace(
+        highlighted = highlighted.replace(
             p.placeholder,
-            `<span class="highlight ${p.colorClass}">${p.original}</span>`
+            `<span class="highlight ${p.colorClass}">${p.keyword}</span>`
         );
     }
 
-    articleElement.innerHTML = highlightedText.trim();
+    articleElement.innerHTML = highlighted;
 
+    if (results.length === 0) {
+        resultsTable.innerHTML = '<p>No keywords found.</p>';
+        return;
+    }
+
+    // Build results table
+    const categoryOrder = ['Table', 'Section', 'LSI'];
     let html = `
         <table>
             <thead>
@@ -99,28 +134,23 @@ function displayResults(results, originalArticle, placeholders) {
             <tbody>
     `;
 
-    const categoryOrder = ['Table', 'Section', 'LSI'];
-    categoryOrder.forEach(category => {
-        const categoryResults = results.filter(r => r.category === category);
-        if (categoryResults.length > 0) {
-            html += `<tr class="category-header"><td colspan="4"><strong>${category} Keywords</strong></td></tr>`;
-            categoryResults.forEach(item => {
+    categoryOrder.forEach(cat => {
+        const group = results.filter(r => r.category === cat);
+        if (group.length > 0) {
+            html += `<tr class="category-header"><td colspan="4"><strong>${cat} Keywords</strong></td></tr>`;
+            group.forEach(r => {
                 html += `
                     <tr>
-                        <td><div class="color-swatch ${item.class}"></div></td>
-                        <td>${item.keyword}</td>
-                        <td>${item.count}</td>
-                        <td>${item.category}</td>
+                        <td><div class="color-swatch ${r.class.replace('-keyword', '-highlight')}"></div></td>
+                        <td>${r.keyword}</td>
+                        <td>${r.count}</td>
+                        <td>${r.category}</td>
                     </tr>
                 `;
             });
         }
     });
 
-    html += '</tbody></table>';
+    html += `</tbody></table>`;
     resultsTable.innerHTML = html;
-}
-
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
