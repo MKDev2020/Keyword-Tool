@@ -118,5 +118,41 @@ tr:nth-child(even) {
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
+
+        /* style.css */
+/* Add these new styles */
+.highlight {
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.table-highlight {
+    background-color: #fffacd; /* Yellow */
+}
+
+.lsi-highlight {
+    background-color: #e6f7ff; /* Light blue */
+}
+
+.section-highlight {
+    background-color: #e6ffe6; /* Light green */
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+#highlightedArticle {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+    
+}
     }
 }
