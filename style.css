@@ -90,19 +90,19 @@ th {
     padding: 2px 4px;
     border-radius: 3px;
     font-weight: bold;
-    color: #000; /* Pure black text */
+    color: #000;
 }
 
 .table-highlight {
-    background-color: #FFEE93; /* Deeper yellow */
+    background-color: #FFEE93;
 }
 
 .lsi-highlight {
-    background-color: #B3E0FF; /* Deeper light blue */
+    background-color: #B3E0FF;
 }
 
 .section-highlight {
-    background-color: #A3E4A3; /* Deeper light green */
+    background-color: #A3E4A3;
 }
 
 .color-swatch {
@@ -121,7 +121,7 @@ th {
     white-space: pre-wrap;
     font-family: inherit;
     line-height: inherit;
-    color: #000; /* Pure black text */
+    color: #000;
 }
 
 @media (max-width: 768px) {
