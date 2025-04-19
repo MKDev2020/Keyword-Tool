@@ -178,3 +178,48 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('highlightedArticle').innerHTML = testText.trim();
     }
 });
+
+// SHARE RESULTS BUTTON
+document.getElementById('shareBtn').addEventListener('click', () => {
+    const article = document.getElementById('article').value.trim();
+    const table = document.getElementById('tableKeywords').value.trim();
+    const lsi = document.getElementById('lsiKeywords').value.trim();
+    const section = document.getElementById('sectionKeywords').value.trim();
+
+    if (!article) {
+        alert("Please paste an article before generating a shareable link.");
+        return;
+    }
+
+    const payload = {
+        article,
+        table,
+        lsi,
+        section
+    };
+
+    const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+    const shareURL = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+
+    document.getElementById('shareLink').value = shareURL;
+});
+
+// LOAD SHARED DATA ON PAGE LOAD
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const encodedData = urlParams.get('data');
+
+    if (encodedData) {
+        try {
+            const json = JSON.parse(decodeURIComponent(atob(encodedData)));
+            document.getElementById('article').value = json.article || '';
+            document.getElementById('tableKeywords').value = json.table || '';
+            document.getElementById('lsiKeywords').value = json.lsi || '';
+            document.getElementById('sectionKeywords').value = json.section || '';
+
+            countKeywords(); // Auto-run analysis
+        } catch (e) {
+            console.error("Failed to load shared data:", e);
+        }
+    }
+});
