@@ -1,5 +1,3 @@
-Final Working JS code:
-
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
