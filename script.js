@@ -83,7 +83,7 @@ function countKeywords() {
         }
     });
 
-    displayResults(results, article, placeholders);
+    displayResults(results, workingText, placeholders);
 }
 
 function parseKeywords(keywordString) {
@@ -93,12 +93,12 @@ function parseKeywords(keywordString) {
         .filter(keyword => keyword.length > 0);
 }
 
-function displayResults(results, originalArticle, placeholders) {
+function displayResults(results, workingText, placeholders) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
 
-    // Start with the original article
-    let highlightedText = ` ${originalArticle} `;
+    // Start with the working text
+    let highlightedText = workingText;
 
     // Replace all placeholders with span-wrapped keywords
     placeholders.forEach(p => {
