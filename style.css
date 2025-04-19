@@ -88,17 +88,20 @@ th {
 
 .highlight {
     font-weight: bold;
-    padding: 0 2px;
-    border-radius: 3px;
+    padding: 2px 4px;
+    border-radius: 4px;
 }
+
 .table-highlight {
-    background-color: #ffeeba;
+    background-color: #fffb91 !important; /* Important to override other styles */
 }
-.lsi-highlight {
-    background-color: #d4edda;
-}
+
 .section-highlight {
-    background-color: #cce5ff;
+    background-color: #a3f7bf !important;
+}
+
+.lsi-highlight {
+    background-color: #c3e1ff !important;
 }
 
 .color-swatch {
