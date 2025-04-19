@@ -28,15 +28,16 @@ function countKeywords() {
     categories.forEach((cat, catIndex) => {
         const sorted = [...cat.keywords].sort((a, b) => b.length - a.length);
         sorted.forEach(k => {
-            const cleaned = k.trim().toLowerCase();
+            const clean = k.trim();
+            const lower = clean.toLowerCase();
             allKeywords.push({
-                keyword: k.trim(),
-                lower: cleaned,
+                keyword: clean,
+                lower,
                 colorClass: cat.colorClass,
                 category: cat.name,
                 priority: catIndex
             });
-            keywordCounts[cleaned] = 0;
+            keywordCounts[lower] = 0;
         });
     });
 
@@ -69,7 +70,6 @@ function countKeywords() {
         }
     });
 
-    // Collect results (even those with 0 count)
     const unique = new Set();
     allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
         if (!unique.has(lower)) {
@@ -106,11 +106,6 @@ function displayResults(results, originalArticle, placeholders) {
         );
     }
     articleElement.innerHTML = highlightedText.trim();
-
-    if (results.length === 0) {
-        resultsTable.innerHTML = '<p>No keywords found.</p>';
-        return;
-    }
 
     let html = `
         <table>
