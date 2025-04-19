@@ -97,16 +97,18 @@ function displayResults(results, originalArticle, placeholders) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
 
+    // Start with the original article
     let highlightedText = ` ${originalArticle} `;
-    placeholders.sort((a, b) => a.start - b.start);
-    for (let p of placeholders) {
-        highlightedText = highlightedText.replace(
-            p.placeholder,
-            `<span class="highlight ${p.colorClass}">${p.original}</span>`
-        );
-    }
+
+    // Replace all placeholders with span-wrapped keywords
+    placeholders.forEach(p => {
+        const span = `<span class="highlight ${p.colorClass}">${p.original}</span>`;
+        highlightedText = highlightedText.replace(p.placeholder, span);
+    });
+
     articleElement.innerHTML = highlightedText.trim();
 
+    // Build results table
     let html = `
         <table>
             <thead>
