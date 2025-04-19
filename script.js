@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
@@ -66,11 +66,9 @@ function countKeywords() {
     displayResults(results, article, placeholders);
 }
 
-
 function parseKeywords(keywordString) {
-    return keywordString
-        .split(/[\n,]/)
-        .map(keyword => keyword.trim().toLowerCase())
+    return keywordString.split(/[\n,]/)
+        .map(keyword => keyword.trim())
         .filter(keyword => keyword.length > 0);
 }
 
@@ -78,6 +76,7 @@ function displayResults(results, originalArticle, placeholders) {
     const resultsTable = document.getElementById('resultsTable');
     const articleElement = document.getElementById('highlightedArticle');
 
+    // Highlight article using EXACT method from your working version
     let highlightedText = ` ${originalArticle} `;
     placeholders.sort((a, b) => a.start - b.start);
     for (let p of placeholders) {
@@ -88,6 +87,7 @@ function displayResults(results, originalArticle, placeholders) {
     }
     articleElement.innerHTML = highlightedText.trim();
 
+    // Create grouped results table
     if (results.length === 0) {
         resultsTable.innerHTML = '<p>No keywords found.</p>';
         return;
@@ -106,6 +106,7 @@ function displayResults(results, originalArticle, placeholders) {
             <tbody>
     `;
 
+    // Group by category (Table -> Section -> LSI)
     const categoryOrder = ['Table', 'Section', 'LSI'];
     categoryOrder.forEach(category => {
         const categoryResults = results.filter(r => r.category === category);
@@ -115,6 +116,7 @@ function displayResults(results, originalArticle, placeholders) {
                     <td colspan="4"><strong>${category} Keywords</strong></td>
                 </tr>
             `;
+
             categoryResults.forEach(item => {
                 html += `
                     <tr>
