@@ -44,6 +44,25 @@ textarea {
     line-height: 1.5;
 }
 
+/* Add this with your other button styles, before the media query */
+.btn-blue {
+    padding: 10px 18px;
+    background-color: #3b82f6; /* Blue */
+    color: #ffffff;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.15s ease;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-blue:hover {
+    background-color: #2563eb; /* Darker Blue on hover */
+    transform: translateY(-1px);
+}
+
 /* Button Styling */
 .button-group {
     display: flex;
@@ -154,26 +173,5 @@ th {
     .container {
         flex-direction: column;
     }
-
-<style>
-  .btn-blue {
-    padding: 10px 18px;
-    background-color: #3b82f6; /* Blue */
-    color: #ffffff;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.25s ease, transform 0.15s ease;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .btn-blue:hover {
-    background-color: #2563eb; /* Darker Blue on hover */
-    transform: translateY(-1px);
-  }
-</style>
-
 
 }
