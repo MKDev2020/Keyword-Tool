@@ -135,14 +135,13 @@ function displayResults(results, workingText, placeholders) {
     // Build results table
     let html = `
         <table>
-           <thead>
-    <tr>
-        <th>Color</th>
-        <th>Keyword</th>
-        <th>Count</th>
-        <th>Density (%)</th>
-        <th>Category</th>
-    </tr>
+            <thead>
+                <tr>
+                    <th>Color</th>
+                    <th>Keyword</th>
+                    <th>Count</th>
+                    <th>Category</th>
+                </tr>
             </thead>
             <tbody>
     `;
@@ -151,23 +150,23 @@ function displayResults(results, workingText, placeholders) {
     categoryOrder.forEach(category => {
         const categoryResults = results.filter(r => r.category === category);
         if (categoryResults.length > 0) {
-            
-            const totalWords = articleElement.innerText.split(/\s+/).filter(w => w).length;
+            html += `
+                <tr class="category-header">
+                    <td colspan="4"><strong>${category} Keywords</strong></td>
+                </tr>
+            `;
             categoryResults.forEach(item => {
-            const density = totalWords > 0 ? ((item.count / totalWords) * 100).toFixed(2) : '0.00';
-            const redClass = item.count === 0 ? 'zero-count' : '';
-
-    html += `
-        <tr class="${redClass}">
-            <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
-            <td>${item.keyword}</td>
-            <td>${item.count}</td>
-            <td>${density}</td>
-            <td>${item.category}</td>
-        </tr>
-    `;
-});
-
+                html += `
+                    <tr>
+                        <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
+                        <td>${item.keyword}</td>
+                        <td>${item.count}</td>
+                        <td>${item.category}</td>
+                    </tr>
+                `;
+            });
+        }
+    });
 
     html += `</tbody></table>`;
     resultsTable.innerHTML = html;
