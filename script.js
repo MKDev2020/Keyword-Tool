@@ -1,4 +1,27 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // 🔁 Shared link logic from JSONBin
+    const urlParams = new URLSearchParams(window.location.search);
+    const binId = urlParams.get('bin');
+    if (binId) {
+        fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+            headers: {
+                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('article').value = data.record.article;
+            document.getElementById('tableKeywords').value = data.record.tableKeywords;
+            document.getElementById('lsiKeywords').value = data.record.lsiKeywords;
+            document.getElementById('sectionKeywords').value = data.record.sectionKeywords;
+            countKeywords(); // Auto-highlight
+        })
+        .catch(err => {
+            console.error('Error loading shared data:', err);
+        });
+    }
+
+    // 📌 Your existing event listener setup
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
@@ -179,30 +202,45 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// SHARE RESULTS BUTTON
-document.getElementById('shareBtn').addEventListener('click', () => {
-    const article = document.getElementById('article').value.trim();
-    const table = document.getElementById('tableKeywords').value.trim();
-    const lsi = document.getElementById('lsiKeywords').value.trim();
-    const section = document.getElementById('sectionKeywords').value.trim();
+    // Share Results Button Handler
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+        const article = document.getElementById('article').value.trim();
+        const tableKeywords = document.getElementById('tableKeywords').value.trim();
+        const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
+        const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
 
-    if (!article) {
-        alert("Please paste an article before generating a shareable link.");
-        return;
-    }
+        if (!article) {
+            alert("Paste an article first before sharing.");
+            return;
+        }
 
-    const payload = {
-        article,
-        table,
-        lsi,
-        section
-    };
+        const data = {
+            article,
+            tableKeywords,
+            lsiKeywords,
+            sectionKeywords
+        };
 
-    const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
-    const shareURL = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+        try {
+            const res = await fetch('https://api.jsonbin.io/v3/b', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
+                    'X-Bin-Private': 'false'  // Make bin public so others can view
+                },
+                body: JSON.stringify(data)
+            });
 
-    document.getElementById('shareLink').value = shareURL;
-});
+            const json = await res.json();
+            const binId = json.metadata.id;
+            const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
+            document.getElementById('shareLink').value = shareLink;
+        } catch (err) {
+            alert('Error creating shareable link. Please try again.');
+            console.error(err);
+        }
+    });
 
 // LOAD SHARED DATA ON PAGE LOAD
 window.addEventListener('DOMContentLoaded', () => {
