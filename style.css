@@ -168,6 +168,11 @@ th {
     color: #000;
 }
 
+.zero-count td {
+    color: red;
+    font-weight: bold;
+}
+
 /* Media Queries for Mobile */
 @media (max-width: 768px) {
     .container {
