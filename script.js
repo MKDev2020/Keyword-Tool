@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function countKeywords() {
-    const article = document.getElementById('article').value;
+    const article = document.getElementById('article').value; // added on 24/04/2025
+    const wordCount = article.trim().split(/\s+/).length;
+    document.getElementById('wordCount').textContent = `Total Words: ${wordCount.toLocaleString()}`;
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
     const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
@@ -100,6 +102,7 @@ function countKeywords() {
             results.push({
                 keyword,
                 count: keywordCounts[lower],
+                density: ((keywordCounts[lower] / wordCount) * 100).toFixed(2), // added on 24/04/2025
                 category,
                 class: colorClass.replace('-highlight', '-keyword')
             });
@@ -132,7 +135,7 @@ function displayResults(results, workingText, placeholders) {
     console.log(highlightedText);
     articleElement.innerHTML = highlightedText.trim();
 
-    // Build results table
+    // Build results table // added "<th>Density (%)</th>" on 24/04/2025
     let html = `
         <table>
             <thead>
@@ -140,6 +143,7 @@ function displayResults(results, workingText, placeholders) {
                     <th>Color</th>
                     <th>Keyword</th>
                     <th>Count</th>
+                    <th>Density (%)</th>
                     <th>Category</th>
                 </tr>
             </thead>
@@ -155,12 +159,14 @@ function displayResults(results, workingText, placeholders) {
                     <td colspan="4"><strong>${category} Keywords</strong></td>
                 </tr>
             `;
+            // added "<td>${item.density}</td>" on 24/04/2025
             categoryResults.forEach(item => {
                 html += `
                     <tr>
                         <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
                         <td>${item.keyword}</td>
                         <td>${item.count}</td>
+                        <td>${item.density}</td> 
                         <td>${item.category}</td>
                     </tr>
                 `;
