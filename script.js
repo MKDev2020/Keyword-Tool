@@ -26,9 +26,10 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function countKeywords() {
-    const article = document.getElementById('article').value; // added on 24/04/2025
-    const wordCount = article.trim().split(/\s+/).length;
-    document.getElementById('wordCount').textContent = `Total Words: ${wordCount.toLocaleString()}`;
+    const article = document.getElementById('article').value; 
+    const wordCount = (article.match(/\b\w+\b/g) || []).length; // added on 24/04/2025
+    document.getElementById('wordCount').textContent = `Total Words: ${wordCount.toLocaleString()}`; // added on 24/04/2025
+    
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
     const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
@@ -102,7 +103,7 @@ function countKeywords() {
             results.push({
                 keyword,
                 count: keywordCounts[lower],
-                density: ((keywordCounts[lower] / wordCount) * 100).toFixed(2), // added on 24/04/2025
+                density: ((keywordCounts[lower] / results.length) * 100).toFixed(2) + "%", // Updated calculation // added on 24/04/2025
                 category,
                 class: colorClass.replace('-highlight', '-keyword')
             });
@@ -160,13 +161,15 @@ function displayResults(results, workingText, placeholders) {
                 </tr>
             `;
             // added "<td>${item.density}</td>" on 24/04/2025
+            // New update changed the above to "<td>${((item.count / wordCount) * 100).toFixed(2)}%</td> <!-- Updated to use item.count -->" on 24/04/2025
+            // New update changed the above to "<td>${item.density}</td> <!-- Display pre-calculated density -->" on 24/04/2025
             categoryResults.forEach(item => {
                 html += `
                     <tr>
                         <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
                         <td>${item.keyword}</td>
                         <td>${item.count}</td>
-                        <td>${item.density}</td> 
+                        <td>${item.density}</td> <!-- Display pre-calculated density --> 
                         <td>${item.category}</td>
                     </tr>
                 `;
