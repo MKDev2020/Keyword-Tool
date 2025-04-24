@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function countWordsInHighlightedArticle() {
     const highlightedContent = document.getElementById('highlightedArticle').innerText;
     const wordMatches = highlightedContent.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || [];
-    const wordCount = wordMatches.filter(word => word.length > 0).length;
+//    const wordCount = wordMatches.filter(word => word.length > 0).length; // removed and only counting from the highlighted article box
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`;
 }
 
@@ -123,6 +123,11 @@ function countKeywords() {
         }
     });
 
+  // Count words from final highlighted article (HTML stripped) updated on 24/05/2025
+const finalText = document.getElementById('highlightedArticle').innerText.trim();
+const finalWords = finalText.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || [];
+const finalWordCount = finalWords.filter(word => word.length > 0).length;
+    
     const unique = new Set();
     allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
         if (!unique.has(lower)) {
@@ -130,7 +135,7 @@ function countKeywords() {
             results.push({
                 keyword,
                 count: keywordCounts[lower],
-                density: wordCount > 0 ? ((keywordCounts[lower] / wordCount) * 100).toFixed(2) + "%" : "0%", // Updated calculation // added on 24/04/2025
+                density: finalWordCount > 0 ? ((keywordCounts[lower] / wordCount) * 100).toFixed(2) + "%" : "0%", // Updated calculation // added on 24/04/2025 // new update changed "wordCount" to "finalWordCount" on 24/05/2025
                 category,
                 class: colorClass.replace('-highlight', '-keyword')
             });
