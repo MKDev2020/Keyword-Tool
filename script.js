@@ -215,71 +215,25 @@ function escapeRegExp(string) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Clear All Button Handler
+    // Clear Button Handler update on 24/04/2025
     document.getElementById('clearBtn').addEventListener('click', () => {
-        const confirmed = confirm("Are you sure you want to clear all text and results?");
-        if (confirmed) {
-            // Clear article content (use innerHTML for formatted text)
-            document.getElementById('article').innerHTML = '';
+    const confirmed = confirm("Are you sure you want to clear all text and results?");
+    if (confirmed) {
+        document.getElementById('article').innerHTML = ''; // For contenteditable
+        document.getElementById('tableKeywords').value = '';
+        document.getElementById('lsiKeywords').value = '';
+        document.getElementById('sectionKeywords').value = '';
+        document.getElementById('highlightedArticle').innerHTML = '';
+        document.getElementById('resultsTable').innerHTML = '';
+        document.getElementById('shareLink').value = ''; // ✅ Clear the share link input
 
-            // Clear keyword input fields
-            document.getElementById('tableKeywords').value = '';
-            document.getElementById('lsiKeywords').value = '';
-            document.getElementById('sectionKeywords').value = '';
+        // Remove bin parameter from the URL
+const url = new URL(window.location);
+url.searchParams.delete('bin');
+window.history.replaceState({}, document.title, url.pathname);
 
-            // Clear highlighted article content
-            document.getElementById('highlightedArticle').innerHTML = '';
-
-            // Clear results table (if applicable)
-            document.getElementById('resultsTable').innerHTML = '';
-
-            // Clear share link field
-            document.getElementById('shareLink').value = '';
-        }
-    });
-
-    // Clear share link on page load or refresh
-    document.getElementById('shareLink').value = '';
-
-    // Sample Highlight Preview (Only if nothing is already there)
-    const articleContent = document.getElementById('highlightedArticle').innerHTML.trim();
-    if (!articleContent) {
-        const testText = `
-            This is a <span class="highlight table-highlight">table keyword</span>, 
-            a <span class="highlight lsi-highlight">LSI keyword</span>, and 
-            a <span class="highlight section-highlight">section-specific keyword</span>.
-        `;
-        document.getElementById('highlightedArticle').innerHTML = testText.trim();
     }
 });
-
-
-window.addEventListener('DOMContentLoaded', () => {
-    // Clear Button Handler
-    document.getElementById('clearBtn').addEventListener('click', () => {
-        const confirmed = confirm("Are you sure you want to clear all text and results?");
-        if (confirmed) {
-            // Clear article content (use innerHTML for formatted text)
-            document.getElementById('article').innerHTML = '';
-
-            // Clear keyword input fields
-            document.getElementById('tableKeywords').value = '';
-            document.getElementById('lsiKeywords').value = '';
-            document.getElementById('sectionKeywords').value = '';
-
-            // Clear highlighted article content
-            document.getElementById('highlightedArticle').innerHTML = '';
-
-            // Clear results table (if applicable)
-            document.getElementById('resultsTable').innerHTML = '';
-
-            // Clear share link field
-            document.getElementById('shareLink').value = '';
-        }
-    });
-
-    // Clear share link on page load or refresh
-    document.getElementById('shareLink').value = '';
 
     // Sample Highlight Preview (Only if nothing is already there)
     const articleContent = document.getElementById('highlightedArticle').innerHTML.trim();
@@ -291,21 +245,46 @@ window.addEventListener('DOMContentLoaded', () => {
         `;
         document.getElementById('highlightedArticle').innerHTML = testText.trim();
     }
+});
 
-    // Share Results Handler
-    document.getElementById('shareBtn').addEventListener('click', () => {
-        // Get current article and keyword data
-        const article = document.getElementById('article').innerHTML;
-        const tableKeywords = document.getElementById('tableKeywords').value;
-        const lsiKeywords = document.getElementById('lsiKeywords').value;
-        const sectionKeywords = document.getElementById('sectionKeywords').value;
+// Share Results Button Handler
+document.getElementById('shareBtn').addEventListener('click', async () => {
+    const article = document.getElementById('article').innerHTML.trim(); // Get HTML of the article
+    const tableKeywords = document.getElementById('tableKeywords').value.trim();
+    const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
+    const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
 
-        // Generate the link (this is where you'd implement your link generation logic)
-        const shareLink = `https://example.com/share?article=${encodeURIComponent(article)}&tableKeywords=${encodeURIComponent(tableKeywords)}&lsiKeywords=${encodeURIComponent(lsiKeywords)}&sectionKeywords=${encodeURIComponent(sectionKeywords)}`;
-        
-        // Set the share link to the input field
-        document.getElementById('shareLink').value = shareLink;
-    });
+    if (!article) {
+        alert("Paste an article first before sharing.");
+        return;
+    }
+
+    const data = {
+        article,
+        tableKeywords,
+        lsiKeywords,
+        sectionKeywords
+    };
+
+    try {
+        const res = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
+                'X-Bin-Private': 'false' // Make bin public so others can view
+            },
+            body: JSON.stringify(data)
+        });
+
+        const json = await res.json();
+        const binId = json.metadata.id;
+        const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
+        document.getElementById('shareLink').value = shareLink; // Outputs the link in the input field
+    } catch (err) {
+        alert('Error creating shareable link. Please try again.');
+        console.error(err);
+    }
 });
 
 
