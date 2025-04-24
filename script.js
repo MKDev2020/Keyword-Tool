@@ -139,7 +139,8 @@ allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
             keyword,
             count: keywordCount,
             // Calculate density based on the total unique keywords
-            density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
+            // density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
+            density: "", // replaced with the above on 24/04/2025
             category,
             class: colorClass.replace('-highlight', '-keyword')
         });
