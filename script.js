@@ -1,5 +1,27 @@
 document.addEventListener('DOMContentLoaded', function () {
-      // 📌 Your existing event listener setup
+    // 🔁 Shared link logic from JSONBin
+    const urlParams = new URLSearchParams(window.location.search);
+    const binId = urlParams.get('bin');
+    if (binId) {
+        fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+            headers: {
+                'X-Master-Key': 'GITHUB_TOKEN' // 🔁 Replace this with your real JSONBin key
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('article').value = data.record.article;
+            document.getElementById('tableKeywords').value = data.record.tableKeywords;
+            document.getElementById('lsiKeywords').value = data.record.lsiKeywords;
+            document.getElementById('sectionKeywords').value = data.record.sectionKeywords;
+            countKeywords(); // Auto-highlight
+        })
+        .catch(err => {
+            console.error('Error loading shared data:', err);
+        });
+    }
+
+    // 📌 Your existing event listener setup
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
@@ -234,4 +256,65 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+    // Share Results Button Handler
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+     //   const article = document.getElementById('article').value.trim();
+     //   const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
+        const article = document.getElementById('article').innerHTML; // update on 24/05/2025
+        const tableKeywords = document.getElementById('tableKeywords').value.trim();
+        const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
+        const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
+
+        if (!article) {
+            alert("Paste an article first before sharing.");
+            return;
+        }
+
+        const data = {
+            article,
+            tableKeywords,
+            lsiKeywords,
+            sectionKeywords
+        };
+
+        try {
+            const res = await fetch('https://api.jsonbin.io/v3/b', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': 'GITHUB_TOKEN',
+                    'X-Bin-Private': 'false'  // Make bin public so others can view
+                },
+                body: JSON.stringify(data)
+            });
+
+            const json = await res.json();
+            const binId = json.metadata.id;
+            const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
+            document.getElementById('shareLink').value = shareLink;
+        } catch (err) {
+            alert('Error creating shareable link. Please try again.');
+            console.error(err);
+        }
+    });
+
+// LOAD SHARED DATA ON PAGE LOAD
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const encodedData = urlParams.get('data');
+
+    if (encodedData) {
+        try {
+            const json = JSON.parse(decodeURIComponent(atob(encodedData)));
+            document.getElementById('article').value = json.article || '';
+            document.getElementById('tableKeywords').value = json.table || '';
+            document.getElementById('lsiKeywords').value = json.lsi || '';
+            document.getElementById('sectionKeywords').value = json.section || '';
+
+            countKeywords(); // Auto-run analysis
+        } catch (e) {
+            console.error("Failed to load shared data:", e);
+        }
+    }
+});
 
