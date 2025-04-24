@@ -1,25 +1,25 @@
 document.addEventListener('DOMContentLoaded', function () {
     // 🔁 Shared link logic from JSONBin
-    const urlParams = new URLSearchParams(window.location.search);
-    const binId = urlParams.get('bin');
-    if (binId) {
-        fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-            headers: {
-                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('article').value = data.record.article;
-            document.getElementById('tableKeywords').value = data.record.tableKeywords;
-            document.getElementById('lsiKeywords').value = data.record.lsiKeywords;
-            document.getElementById('sectionKeywords').value = data.record.sectionKeywords;
-            countKeywords(); // Auto-highlight
-        })
-        .catch(err => {
-            console.error('Error loading shared data:', err);
-        });
-    }
+//    const urlParams = new URLSearchParams(window.location.search);
+//    const binId = urlParams.get('bin');
+//    if (binId) {
+//        fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+//            headers: {
+//                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
+//            }
+//        })
+//        .then(res => res.json())
+//        .then(data => {
+//            document.getElementById('article').value = data.record.article;
+//            document.getElementById('tableKeywords').value = data.record.tableKeywords;
+//            document.getElementById('lsiKeywords').value = data.record.lsiKeywords;
+//            document.getElementById('sectionKeywords').value = data.record.sectionKeywords;
+//            countKeywords(); // Auto-highlight
+//        })
+//        .catch(err => {
+//            console.error('Error loading shared data:', err);
+//        });
+//    }
 
     // 📌 Your existing event listener setup
     document.getElementById('countBtn').addEventListener('click', countKeywords);
@@ -244,7 +244,10 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('shareBtn').addEventListener('click', async () => {
      //   const article = document.getElementById('article').value.trim();
      //   const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
-        const article = document.getElementById('article').innerHTML; // update on 24/05/2025
+     //   const article = document.getElementById('article').innerHTML; // update on 24/05/2025
+        const articleRaw = document.getElementById('article').innerHTML; // update on 24/05/2025
+        const article = encodeURIComponent(articleRaw); // update on 24/05/2025
+        const highlighted = encodeURIComponent(document.getElementById('highlighted-article').innerHTML); // update on 24/05/2025
         const tableKeywords = document.getElementById('tableKeywords').value.trim();
         const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
         const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
@@ -256,21 +259,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
         const data = {
             article,
+            highlighted,
             tableKeywords,
             lsiKeywords,
             sectionKeywords
         };
 
-        try {
-            const res = await fetch('https://api.jsonbin.io/v3/b', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
-                    'X-Bin-Private': 'false'  // Make bin public so others can view
-                },
-                body: JSON.stringify(data)
-            });
+//        try {
+//            const res = await fetch('https://api.jsonbin.io/v3/b', {
+//                method: 'POST',
+//                headers: {
+//                    'Content-Type': 'application/json',
+//                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
+//                    'X-Bin-Private': 'false'  // Make bin public so others can view
+//                },
+//                body: JSON.stringify(data)
+//            });
 
             const json = await res.json();
             const binId = json.metadata.id;
@@ -290,10 +294,19 @@ window.addEventListener('DOMContentLoaded', () => {
     if (encodedData) {
         try {
             const json = JSON.parse(decodeURIComponent(atob(encodedData)));
-            document.getElementById('article').value = json.article || '';
-            document.getElementById('tableKeywords').value = json.table || '';
-            document.getElementById('lsiKeywords').value = json.lsi || '';
-            document.getElementById('sectionKeywords').value = json.section || '';
+
+            // Restore contenteditable article box (rich text)
+            document.getElementById('article').innerHTML = decodeURIComponent(json.article || '');
+
+            // Restore plain keyword boxes
+            document.getElementById('tableKeywords').value = json.tableKeywords || '';
+            document.getElementById('lsiKeywords').value = json.lsiKeywords || '';
+            document.getElementById('sectionKeywords').value = json.sectionKeywords || '';
+
+            // Optional: Restore highlighted result if you're saving that too
+            if (json.highlighted) {
+                document.getElementById('highlighted-article').innerHTML = decodeURIComponent(json.highlighted);
+            }
 
             countKeywords(); // Auto-run analysis
         } catch (e) {
