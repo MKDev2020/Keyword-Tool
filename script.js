@@ -234,64 +234,69 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-    // Share Results Button Handler
-    document.getElementById('shareBtn').addEventListener('click', async () => {
-     //   const article = document.getElementById('article').value.trim();
-     //   const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
-        const article = document.getElementById('article').innerHTML; // update on 24/05/2025
-        const tableKeywords = document.getElementById('tableKeywords').value.trim();
-        const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
-        const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
+   // Share Results Button Handler
+document.getElementById('shareBtn').addEventListener('click', async () => {
+    const article = document.getElementById('article').innerHTML.trim();
+    const tableKeywords = document.getElementById('tableKeywords').value.trim();
+    const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
+    const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
 
-        if (!article) {
-            alert("Paste an article first before sharing.");
-            return;
+    if (!article) {
+        alert("Paste an article first before sharing.");
+        return;
+    }
+
+    const payload = {
+        article,
+        tableKeywords,
+        lsiKeywords,
+        sectionKeywords
+    };
+
+    try {
+        const res = await fetch('/.netlify/functions/share', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
         }
 
-        const data = {
-            article,
-            tableKeywords,
-            lsiKeywords,
-            sectionKeywords
-        };
+        const data = await res.json();
+        const shareLink = `${window.location.origin}${window.location.pathname}?gist=${data.gistId}`;
+        document.getElementById('shareLink').value = shareLink;
+    } catch (err) {
+        alert('Error creating shareable link. Please try again.');
+        console.error(err);
+    }
+});
 
-        try {
-            const res = await fetch('https://api.jsonbin.io/v3/b', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
-                    'X-Bin-Private': 'false'  // Make bin public so others can view
-                },
-                body: JSON.stringify(data)
-            });
-
-            const json = await res.json();
-            const binId = json.metadata.id;
-            const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
-            document.getElementById('shareLink').value = shareLink;
-        } catch (err) {
-            alert('Error creating shareable link. Please try again.');
-            console.error(err);
-        }
-    });
-
-// LOAD SHARED DATA ON PAGE LOAD
-window.addEventListener('DOMContentLoaded', () => {
+// LOAD SHARED DATA ON PAGE LOAD FROM GIST
+window.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const encodedData = urlParams.get('data');
+    const gistId = urlParams.get('gist');
 
-    if (encodedData) {
+    if (gistId) {
         try {
-            const json = JSON.parse(decodeURIComponent(atob(encodedData)));
-            document.getElementById('article').value = json.article || '';
-            document.getElementById('tableKeywords').value = json.table || '';
-            document.getElementById('lsiKeywords').value = json.lsi || '';
-            document.getElementById('sectionKeywords').value = json.section || '';
+            const res = await fetch(`https://api.github.com/gists/${gistId}`);
+            if (!res.ok) throw new Error(`Failed to fetch gist: ${res.status}`);
+
+            const gist = await res.json();
+            const content = JSON.parse(gist.files["data.json"].content);
+
+            document.getElementById('article').innerHTML = content.article || '';
+            document.getElementById('tableKeywords').value = content.tableKeywords || '';
+            document.getElementById('lsiKeywords').value = content.lsiKeywords || '';
+            document.getElementById('sectionKeywords').value = content.sectionKeywords || '';
 
             countKeywords(); // Auto-run analysis
         } catch (e) {
-            console.error("Failed to load shared data:", e);
+            console.error("Failed to load gist data:", e);
+            alert("Unable to load shared content.");
         }
     }
 });
