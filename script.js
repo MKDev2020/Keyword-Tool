@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (binId) {
         fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
             headers: {
-                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
+                'X-Master-Key': '$2a$10$ysfpz1c/O8aHN1LnxVxM0enNtr3jgQWDZRZufSUGshcKSlu2FLQza' // 🔁 Replace this with your real JSONBin key
             }
         })
         .then(res => res.json())
@@ -264,7 +264,7 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
+                'X-Master-Key': '$2a$10$ysfpz1c/O8aHN1LnxVxM0enNtr3jgQWDZRZufSUGshcKSlu2FLQza',
                 // Removing 'X-Bin-Private' temporarily for testing
                 // 'X-Bin-Private': 'false'
             },
