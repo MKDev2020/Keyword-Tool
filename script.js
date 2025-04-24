@@ -28,15 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function countKeywords() {
     const article = document.getElementById('article').value; 
    
-    // Use a cleaned version *only* for word count // updated on 24/05/2025
-    const cleanedArticle = article
-  .replace(/[“”‘’]/g, '"')
-  .replace(/[–—]/g, '-')
-  .replace(/[^\w\s'-]/g, '')
-  .replace(/\s+/g, ' ')
-  .trim();
+   // More accurate word count to match Google Docs // Updated on 24/04/2025
+const wordMatches = article.match(/[\w’'-]+/g); // Includes contractions, dashes, and curly apostrophes
+const wordCount = wordMatches ? wordMatches.length : 0;
 
-const wordCount = cleanedArticle ? cleanedArticle.split(' ').length : 0;
 document.getElementById('wordCount').textContent = `Total Words: ${wordCount.toLocaleString()}`;
     
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
