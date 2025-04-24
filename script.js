@@ -27,8 +27,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function countKeywords() {
     const article = document.getElementById('article').value; 
-    const wordCount = (article.match(/\b\w+\b/g) || []).length; // added on 24/04/2025
-    document.getElementById('wordCount').textContent = `Total Words: ${wordCount.toLocaleString()}`; // added on 24/04/2025
+   
+    // Use a cleaned version *only* for word count // updated on 24/05/2025
+    const cleanedArticle = article
+  .replace(/[“”‘’]/g, '"')
+  .replace(/[–—]/g, '-')
+  .replace(/[^\w\s'-]/g, '')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const wordCount = cleanedArticle ? cleanedArticle.split(' ').length : 0;
+document.getElementById('wordCount').textContent = `Total Words: ${wordCount.toLocaleString()}`;
     
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
