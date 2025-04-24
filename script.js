@@ -127,36 +127,23 @@ function countKeywords() {
 
   // Count words from final highlighted article updated on 24/05/2025
 
-const finalWordCount = countWordsInHighlightedArticle(); // Total word count in article
+const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
 const unique = new Set();
-
-let totalKeywordHits = 0; // New: track total count of all keyword hits (non-overlapping)
-const keywordDensityMap = {}; // Store keyword counts for result processing
 
 allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
     if (!unique.has(lower)) {
         unique.add(lower);
-        const count = keywordCounts[lower] || 0;
-        totalKeywordHits += count;
-        keywordDensityMap[lower] = {
+        // Use the final unique count of keywords in the highlighted article for density calculation
+        const keywordCount = keywordCounts[lower] || 0;
+        results.push({
             keyword,
-            count,
+            count: keywordCount,
+            // Calculate density based on the total unique keywords
+            density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
             category,
             class: colorClass.replace('-highlight', '-keyword')
-        };
+        });
     }
-});
-
-// Now calculate density *based on totalKeywordHits*
-results = Object.keys(keywordDensityMap).map(lower => {
-    const { keyword, count, category, class: className } = keywordDensityMap[lower];
-    return {
-        keyword,
-        count,
-        density: totalKeywordHits > 0 ? ((count / totalKeywordHits) * 100).toFixed(2) + "%" : "0%",
-        category,
-        class: className
-    };
 });
 
     displayResults(results, workingText, placeholders);
