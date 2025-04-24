@@ -127,16 +127,19 @@ function countKeywords() {
 
   // Count words from final highlighted article (HTML stripped) updated on 24/05/2025
 
-const finalWordCount = countWordsInHighlightedArticle(); // ✅ Gets the final article word count // updated to finalWordCount on 24/04/2025
-
+const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
 const unique = new Set();
+
 allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
     if (!unique.has(lower)) {
         unique.add(lower);
+        // Use the final unique count of keywords in the highlighted article for density calculation
+        const keywordCount = keywordCounts[lower] || 0;
         results.push({
             keyword,
-            count: keywordCounts[lower] || 0,
-            density: finalWordCount > 0 ? ((keywordCounts[lower] / finalWordCount) * 100).toFixed(2) + "%" : "0%", // Correct density calculation // updated with finalWordCount on 24/04/2025
+            count: keywordCount,
+            // Calculate density based on the total unique keywords
+            density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
             category,
             class: colorClass.replace('-highlight', '-keyword')
         });
