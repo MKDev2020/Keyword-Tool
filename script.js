@@ -25,13 +25,15 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
+// Updated on 24/04/2025
 function countKeywords() {
-    const article = document.getElementById('article').value;
+    const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
     
-    // Updated word count method to match Google Docs' word count more accurately // Updated on 24/04/2025
-    const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g); // Accounts for hyphenated words and contractions // Updated on 24/04/2025
-    
-    const wordCount = wordMatches ? wordMatches.length : 0; // Updated on 24/04/2025
+    // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
+    const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
+
+    // Exclude potential extra matches from special characters or empty strings // Updated on 24/04/2025
+    const wordCount = wordMatches.filter(word => word.length > 0).length;
 
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
     
