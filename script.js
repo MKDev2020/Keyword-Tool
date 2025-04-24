@@ -26,13 +26,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function countKeywords() {
-    const article = document.getElementById('article').value; 
-   
-   // More accurate word count to match Google Docs // Updated on 24/04/2025
-const wordMatches = article.match(/[\w’'-]+/g); // Includes contractions, dashes, and curly apostrophes
-const wordCount = wordMatches ? wordMatches.length : 0;
+    const article = document.getElementById('article').value;
+    
+    // Updated word count method to match Google Docs' word count more accurately // Updated on 24/04/2025
+    const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g); // Accounts for hyphenated words and contractions // Updated on 24/04/2025
+    
+    const wordCount = wordMatches ? wordMatches.length : 0; // Updated on 24/04/2025
 
-document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Updated on 24/04/2025
+    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
     
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
