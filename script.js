@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function countKeywords() {
     const article = document.getElementById('article').value.trim();
 
-    // Final version: allows words with apostrophes, hyphens, numbers; also captures symbols as separate "word-like" units
-    const wordMatches = article.match(/[\w’'-]+|[^\s\w]/g) || [];
+    // Optimized regex to match words including numbers, apostrophes, and hyphens only
+    const wordMatches = article.match(/\b[\w’'-]+\b/g) || [];
 
-    const wordCount = wordMatches.filter(word => word.length > 0).length;
+    const wordCount = wordMatches.length;
 
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`;
 
