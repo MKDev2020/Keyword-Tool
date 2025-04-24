@@ -38,8 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
 // Updated on 24/04/2025
 function countKeywords() {
  //   const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
-    const article = document.getElementById('article').innerText.trim(); // update on 24/04/2025
-    
+ //   const article = document.getElementById('article').innerText.trim(); // update on 24/04/2025
+    const article = document.getElementById('article').innerHTML; // update on 24/04/2025
+
     // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
     const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
 
@@ -232,7 +233,8 @@ window.addEventListener('DOMContentLoaded', () => {
     // Share Results Button Handler
     document.getElementById('shareBtn').addEventListener('click', async () => {
      //   const article = document.getElementById('article').value.trim();
-        const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
+     //   const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
+        const article = document.getElementById('article').innerHTML; // update on 24/05/2025
         const tableKeywords = document.getElementById('tableKeywords').value.trim();
         const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
         const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
