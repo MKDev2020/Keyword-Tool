@@ -215,18 +215,31 @@ function escapeRegExp(string) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Clear Button Handler
+    // Clear All Button Handler
     document.getElementById('clearBtn').addEventListener('click', () => {
         const confirmed = confirm("Are you sure you want to clear all text and results?");
         if (confirmed) {
-            document.getElementById('article').value = '';
+            // Clear article content (use innerHTML for formatted text)
+            document.getElementById('article').innerHTML = '';
+
+            // Clear keyword input fields
             document.getElementById('tableKeywords').value = '';
             document.getElementById('lsiKeywords').value = '';
             document.getElementById('sectionKeywords').value = '';
+
+            // Clear highlighted article content
             document.getElementById('highlightedArticle').innerHTML = '';
+
+            // Clear results table (if applicable)
             document.getElementById('resultsTable').innerHTML = '';
+
+            // Clear share link field
+            document.getElementById('shareLink').value = '';
         }
     });
+
+    // Clear share link on page load or refresh
+    document.getElementById('shareLink').value = '';
 
     // Sample Highlight Preview (Only if nothing is already there)
     const articleContent = document.getElementById('highlightedArticle').innerHTML.trim();
@@ -234,11 +247,12 @@ window.addEventListener('DOMContentLoaded', () => {
         const testText = `
             This is a <span class="highlight table-highlight">table keyword</span>, 
             a <span class="highlight lsi-highlight">LSI keyword</span>, and 
-            a <span class="highlight section-highlight">section keyword</span>.
+            a <span class="highlight section-highlight">section-specific keyword</span>.
         `;
         document.getElementById('highlightedArticle').innerHTML = testText.trim();
     }
 });
+
 
 // Share Results Button Handler
 document.getElementById('shareBtn').addEventListener('click', async () => {
