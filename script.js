@@ -225,7 +225,7 @@ window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('sectionKeywords').value = '';
             document.getElementById('highlightedArticle').innerHTML = '';
             document.getElementById('resultsTable').innerHTML = '';
-            document.getElementById('shareLink').value = '';
+    //        document.getElementById('shareLink').value = ''; // disabled for now
 
             // Remove bin from URL
             const url = new URL(window.location);
