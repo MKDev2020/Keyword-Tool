@@ -147,7 +147,6 @@ allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
 });
 
      // ✅ Calculate density using the total word count of the highlighted article // Added this new update on 24/04/2025
-const finalWordCount = countWordsInHighlightedArticle(); // This function already updates word count on screen
 
 results.forEach(item => {
     // Calculate density based on the total word count of the final article
