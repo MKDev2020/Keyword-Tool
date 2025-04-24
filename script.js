@@ -47,26 +47,16 @@ function countWordsInHighlightedArticle() {
 
 // Updated on 24/04/2025
 function countKeywords() {
- //   const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
- //   const article = document.getElementById('article').innerText.trim(); // update on 24/04/2025
-    const article = document.getElementById('article').innerHTML.trim(); // update on 24/04/2025 + added ".trim" at the end
-
-    // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
- ////   const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
-
-    // Exclude potential extra matches from special characters or empty strings // Updated on 24/04/2025
-////    const wordCount = wordMatches.filter(word => word.length > 0).length;
-
-////    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
-    
-    const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
-    const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
-    const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
+    const article = document.getElementById('article').innerText.trim(); // Get only the visible text, not HTML
 
     if (!article) {
         alert('Please paste an article first.');
         return;
     }
+
+    const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
+    const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
+    const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
 
     const categories = [
         { name: 'Table', keywords: tableKeywords, colorClass: 'table-highlight' },
@@ -124,6 +114,13 @@ function countKeywords() {
             keywordCounts[lower]++;
         }
     });
+
+    // Optionally log the word count here
+    const wordMatches = article.match(/\b[\w'-]+\b/g) || [];
+    const wordCount = wordMatches.length;
+    console.log(`Word Count: ${wordCount}`);
+}
+
 
   // Count words from final highlighted article updated on 24/05/2025
 
