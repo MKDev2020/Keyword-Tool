@@ -1,25 +1,25 @@
 document.addEventListener('DOMContentLoaded', function () {
     // 🔁 Shared link logic from JSONBin
-//    const urlParams = new URLSearchParams(window.location.search);
-//    const binId = urlParams.get('bin');
-//    if (binId) {
-//        fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-//            headers: {
-//                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
-//            }
-//        })
-//        .then(res => res.json())
-//        .then(data => {
-//            document.getElementById('article').value = data.record.article;
-//            document.getElementById('tableKeywords').value = data.record.tableKeywords;
-//            document.getElementById('lsiKeywords').value = data.record.lsiKeywords;
-//            document.getElementById('sectionKeywords').value = data.record.sectionKeywords;
-//            countKeywords(); // Auto-highlight
-//        })
-//        .catch(err => {
-//            console.error('Error loading shared data:', err);
-//        });
-//    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const binId = urlParams.get('bin');
+    if (binId) {
+        fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+            headers: {
+                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('article').value = data.record.article;
+            document.getElementById('tableKeywords').value = data.record.tableKeywords;
+            document.getElementById('lsiKeywords').value = data.record.lsiKeywords;
+            document.getElementById('sectionKeywords').value = data.record.sectionKeywords;
+            countKeywords(); // Auto-highlight
+        })
+        .catch(err => {
+            console.error('Error loading shared data:', err);
+        });
+    }
 
     // 📌 Your existing event listener setup
     document.getElementById('countBtn').addEventListener('click', countKeywords);
@@ -257,24 +257,25 @@ window.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const data = {
-            article,
-            highlighted,
-            tableKeywords,
-            lsiKeywords,
-            sectionKeywords
-        };
+       const data = {
+    article: encodeURIComponent(articleHTML),
+    tableKeywords,
+    lsiKeywords,
+    sectionKeywords,
+    highlighted: encodeURIComponent(highlightedHTML) // optional
+};
 
-//        try {
-//            const res = await fetch('https://api.jsonbin.io/v3/b', {
-//                method: 'POST',
-//                headers: {
-//                    'Content-Type': 'application/json',
-//                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
-//                    'X-Bin-Private': 'false'  // Make bin public so others can view
-//                },
-//                body: JSON.stringify(data)
-//            });
+
+         try {
+            const res = await fetch('https://api.jsonbin.io/v3/b', {
+               method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
+                    'X-Bin-Private': 'false'  // Make bin public so others can view
+                },
+                body: JSON.stringify(data)
+            });
 
             const json = await res.json();
             const binId = json.metadata.id;
