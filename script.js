@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (binId) {
         fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
             headers: {
-                'X-Master-Key': 'GITHUB_TOKEN' // 🔁 Replace this with your real JSONBin key
+                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
             }
         })
         .then(res => res.json())
@@ -282,7 +282,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Master-Key': 'GITHUB_TOKEN',
+                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
                     'X-Bin-Private': 'false'  // Make bin public so others can view
                 },
                 body: JSON.stringify(data)
