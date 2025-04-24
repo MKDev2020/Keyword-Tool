@@ -29,13 +29,12 @@ document.addEventListener('DOMContentLoaded', function () {
 function countKeywords() {
     const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces
     
-    // Refined word matching for standard words, emoticons, numbers, hyphenated words, and symbols
-    const wordMatches = article.match(/[\w’'-]+(?:[\w’'-]*[\w’'-])*(?:[\u00A0\u200B\u202F]*[\u2600-\u26FF\u2700-\u27BF\u1F600-\u1F64F\u1F300-\u1F5FF\u1F680-\u1F6FF\u1F700-\u1F77F\u1F780-\u1F7FF\u1F800-\u1F8FF\u1F900-\u1F9FF\u1FA00-\u1FA6F\u1FA70-\u1FAFF\u2600-\u26FF\u2700-\u27BF]*[\u00A0\u200B\u202F]*)?/g) || [];
-    
-    // Filter out any unwanted punctuation or symbols at the end of words
+    // Refined word matching for standard words, numbers with hyphens, emojis, and symbols
+    const wordMatches = article.match(/[\w’'-]+(?:[\w’'-]*[\w’'-])*(?:[\u00A0\u200B\u202F\u0021-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u007E\u2600-\u26FF\u1F600-\u1F64F\u1F300-\u1F5FF\u1F680-\u1F6FF\u1F700-\u1F77F\u1F780-\u1F7FF\u1F800-\u1F8FF\u1F900-\u1F9FF\u1FA00-\u1FA6F\u1FA70-\u1FAFF]+)?/g) || [];
+
+    // Filter out unwanted symbols and punctuation
     const refinedWords = wordMatches.map(word => word.replace(/[^\w’'-]/g, '')).filter(word => word.length > 0);
 
-    // Adjust for edge cases like hyphenated words, URLs, or specific cases Google Docs might handle differently
     const wordCount = refinedWords.length;
 
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count
