@@ -27,9 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Updated on 24/04/2025
 function countKeywords() {
-    const article = document.getElementById('article').value.trim();
+    const article = document.getElementById('article').innerText.trim(); // get visible text, not raw HTML
 
-    // Optimized regex to match words including numbers, apostrophes, and hyphens only
     const wordMatches = article.match(/\b[\w’'-]+\b/g) || [];
 
     const wordCount = wordMatches.length;
