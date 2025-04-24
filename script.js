@@ -127,36 +127,38 @@ function countKeywords() {
 
   // Count words from final highlighted article updated on 24/05/2025
 
-const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
-    console.log("✅ Final Word Count of Article:", finalWordCount);
-    console.log("✅ Keyword Counts:", results.map(r => ({ keyword: r.keyword, count: r.count })));
-
-const unique = new Set();
+// const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
+   
+   const unique = new Set();
 
 allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
     if (!unique.has(lower)) {
         unique.add(lower);
-        // Use the final unique count of keywords in the highlighted article for density calculation
         const keywordCount = keywordCounts[lower] || 0;
         results.push({
             keyword,
             count: keywordCount,
-            // Calculate density based on the total unique keywords
-            // density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
-            density: "", // replaced with the above on 24/04/2025
+            density: "", // density is empty at this point
             category,
             class: colorClass.replace('-highlight', '-keyword')
         });
     }
 });
 
-     // ✅ Calculate density using the total word count of the highlighted article // Added this new update on 24/04/2025
+// ✅ Calculate the final word count *after* article is processed (after keywords are counted, highlighted):
+const finalWordCount = countWordsInHighlightedArticle(); // 👈 This must come here!
 
+// ✅ Now calculate density using the final word count:
 results.forEach(item => {
-    // Calculate density based on the total word count of the final article
-    item.density = finalWordCount > 0 ? ((item.count / finalWordCount) * 100).toFixed(2) + "%" : "0%";
+    item.density = finalWordCount > 0
+        ? ((item.count / finalWordCount) * 100).toFixed(2) + "%" 
+        : "0%";
 });
 
+// ✅ Debug logs to verify correct values
+console.log("✅ Final Word Count of Article:", finalWordCount);
+console.log("✅ Keyword Counts:", results.map(r => ({ keyword: r.keyword, count: r.count })));    
+    
     displayResults(results, workingText, placeholders);
 }
 
