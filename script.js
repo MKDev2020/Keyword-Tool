@@ -146,6 +146,12 @@ allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
     }
 });
 
+    // 🔁 Replace all densities properly AFTER building results // new update on 24/04/2025
+const totalKeywordHits = results.reduce((sum, item) => sum + item.count, 0);
+results.forEach(item => {
+    item.density = totalKeywordHits > 0 ? ((item.count / totalKeywordHits) * 100).toFixed(2) + "%" : "0%";
+});
+
     displayResults(results, workingText, placeholders);
 }
 
