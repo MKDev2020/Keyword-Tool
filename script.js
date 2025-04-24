@@ -244,10 +244,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('shareBtn').addEventListener('click', async () => {
      //   const article = document.getElementById('article').value.trim();
      //   const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
-     //   const article = document.getElementById('article').innerHTML; // update on 24/05/2025
-        const articleRaw = document.getElementById('article').innerHTML; // update on 24/05/2025
-        const article = encodeURIComponent(articleRaw); // update on 24/05/2025
-        const highlighted = encodeURIComponent(document.getElementById('highlighted-article').innerHTML); // update on 24/05/2025
+        const article = document.getElementById('article').innerHTML; // update on 24/05/2025
         const tableKeywords = document.getElementById('tableKeywords').value.trim();
         const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
         const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
@@ -257,18 +254,16 @@ window.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-       const data = {
-    article: encodeURIComponent(articleHTML),
-    tableKeywords,
-    lsiKeywords,
-    sectionKeywords,
-    highlighted: encodeURIComponent(highlightedHTML) // optional
-};
+        const data = {
+            article,
+            tableKeywords,
+            lsiKeywords,
+            sectionKeywords
+        };
 
-
-         try {
+        try {
             const res = await fetch('https://api.jsonbin.io/v3/b', {
-               method: 'POST',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
@@ -295,19 +290,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (encodedData) {
         try {
             const json = JSON.parse(decodeURIComponent(atob(encodedData)));
-
-            // Restore contenteditable article box (rich text)
-            document.getElementById('article').innerHTML = decodeURIComponent(json.article || '');
-
-            // Restore plain keyword boxes
-            document.getElementById('tableKeywords').value = json.tableKeywords || '';
-            document.getElementById('lsiKeywords').value = json.lsiKeywords || '';
-            document.getElementById('sectionKeywords').value = json.sectionKeywords || '';
-
-            // Optional: Restore highlighted result if you're saving that too
-            if (json.highlighted) {
-                document.getElementById('highlighted-article').innerHTML = decodeURIComponent(json.highlighted);
-            }
+            document.getElementById('article').value = json.article || '';
+            document.getElementById('tableKeywords').value = json.table || '';
+            document.getElementById('lsiKeywords').value = json.lsi || '';
+            document.getElementById('sectionKeywords').value = json.section || '';
 
             countKeywords(); // Auto-run analysis
         } catch (e) {
