@@ -297,16 +297,16 @@ window.addEventListener('DOMContentLoaded', () => {
             const json = JSON.parse(decodeURIComponent(atob(encodedData)));
 
             // Restore contenteditable article box (rich text)
-            document.getElementById('article').innerHTML = json.article || '';
+            document.getElementById('article').innerHTML = decodeURIComponent(json.article || '');
 
             // Restore plain keyword boxes
             document.getElementById('tableKeywords').value = json.tableKeywords || '';
             document.getElementById('lsiKeywords').value = json.lsiKeywords || '';
             document.getElementById('sectionKeywords').value = json.sectionKeywords || '';
 
-            // Restore highlighted result if saved
+            // Optional: Restore highlighted result if you're saving that too
             if (json.highlighted) {
-                document.getElementById('highlighted-article').innerHTML = json.highlighted;
+                document.getElementById('highlighted-article').innerHTML = decodeURIComponent(json.highlighted);
             }
 
             countKeywords(); // Auto-run analysis
