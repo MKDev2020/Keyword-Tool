@@ -29,10 +29,11 @@ document.addEventListener('DOMContentLoaded', function () {
 function countKeywords() {
     const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces
     
-    // Use a regular expression to split words based on spaces and basic punctuation
-    const wordsArray = article.split(/\s+/).filter(word => word.length > 0); // Split by spaces and filter empty words
+    // Refined word matching for contractions, hyphenated words, and numbers
+    const wordMatches = article.match(/[A-Za-z0-9’'-]+(?:[A-Za-z0-9’'-]*[A-Za-z0-9’'-])*/g) || [];
 
-    const wordCount = wordsArray.length;
+    // Filter out any empty matches or unwanted non-words
+    const wordCount = wordMatches.filter(word => word.length > 0).length;
 
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count
 
