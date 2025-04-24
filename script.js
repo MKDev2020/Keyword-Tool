@@ -297,16 +297,16 @@ window.addEventListener('DOMContentLoaded', () => {
             const json = JSON.parse(decodeURIComponent(atob(encodedData)));
 
             // Restore contenteditable article box (rich text)
-            document.getElementById('article').innerHTML = decodeURIComponent(json.article || '');
+            document.getElementById('article').innerHTML = json.article || '';
 
             // Restore plain keyword boxes
             document.getElementById('tableKeywords').value = json.tableKeywords || '';
             document.getElementById('lsiKeywords').value = json.lsiKeywords || '';
             document.getElementById('sectionKeywords').value = json.sectionKeywords || '';
 
-            // Optional: Restore highlighted result if you're saving that too
+            // Restore highlighted result if saved
             if (json.highlighted) {
-                document.getElementById('highlighted-article').innerHTML = decodeURIComponent(json.highlighted);
+                document.getElementById('highlighted-article').innerHTML = json.highlighted;
             }
 
             countKeywords(); // Auto-run analysis
@@ -315,3 +315,4 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
