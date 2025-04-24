@@ -253,7 +253,7 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
     }
 
     const data = {
-   //     article,
+        article,
         tableKeywords,
         lsiKeywords,
         sectionKeywords
@@ -299,7 +299,7 @@ window.addEventListener('DOMContentLoaded', () => {
             .then(json => {
                 const data = json.record;
                 // Restore contenteditable article box (rich text)
-        //        document.getElementById('article').innerHTML = data.article || '';
+                document.getElementById('article').innerHTML = data.article || '';
 
                 // Restore plain keyword boxes
                 document.getElementById('tableKeywords').value = data.tableKeywords || '';
@@ -316,4 +316,3 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
