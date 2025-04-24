@@ -27,14 +27,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Updated on 24/04/2025
 function countKeywords() {
-    const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces
+    const article = document.getElementById('article').value.trim();
 
-    // Refined word matching for numbers, hyphenated words, emoticons, and symbols
-    const wordMatches = article.match(/\b[\w’'-]+\b/g) || []; // Match words with or without apostrophes and hyphens, ensuring words are counted properly
+    // Final version: allows words with apostrophes, hyphens, numbers; also captures symbols as separate "word-like" units
+    const wordMatches = article.match(/[\w’'-]+|[^\s\w]/g) || [];
 
-    const wordCount = wordMatches.length;
+    const wordCount = wordMatches.filter(word => word.length > 0).length;
 
-    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count
+    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`;
 
 // Updated on 24/04/2025
 //function countKeywords() {
