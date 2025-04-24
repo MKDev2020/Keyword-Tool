@@ -128,6 +128,9 @@ function countKeywords() {
   // Count words from final highlighted article updated on 24/05/2025
 
 const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
+    console.log("✅ Final Word Count of Article:", finalWordCount);
+    console.log("✅ Keyword Counts:", results.map(r => ({ keyword: r.keyword, count: r.count })));
+
 const unique = new Set();
 
 allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
