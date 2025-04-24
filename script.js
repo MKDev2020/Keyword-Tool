@@ -215,66 +215,20 @@ function escapeRegExp(string) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Clear Button Handler final update hopefully on 24/04/2025
+    // Clear Button Handler
     document.getElementById('clearBtn').addEventListener('click', () => {
         const confirmed = confirm("Are you sure you want to clear all text and results?");
         if (confirmed) {
-            document.getElementById('article').innerHTML = '';
+            document.getElementById('article').value = '';
             document.getElementById('tableKeywords').value = '';
             document.getElementById('lsiKeywords').value = '';
             document.getElementById('sectionKeywords').value = '';
             document.getElementById('highlightedArticle').innerHTML = '';
             document.getElementById('resultsTable').innerHTML = '';
-    //        document.getElementById('shareLink').value = ''; // disabled for now
-
-            // Remove bin from URL
-            const url = new URL(window.location);
-            url.searchParams.delete('bin');
-            window.history.replaceState({}, document.title, url.pathname);
         }
     });
 
-    // Share Button Handler
-    document.getElementById('shareBtn').addEventListener('click', async () => {
-        const article = document.getElementById('article').innerHTML.trim();
-        const tableKeywords = document.getElementById('tableKeywords').value.trim();
-        const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
-        const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
-
-        if (!article) {
-            alert("Paste an article first before sharing.");
-            return;
-        }
-
-        const data = {
-            article,
-            tableKeywords,
-            lsiKeywords,
-            sectionKeywords
-        };
-
-        try {
-            const res = await fetch('https://api.jsonbin.io/v3/b', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
-                    'X-Bin-Private': 'false'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const json = await res.json();
-            const binId = json.metadata.id;
-            const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
-            document.getElementById('shareLink').value = shareLink;
-        } catch (err) {
-            alert('Error creating shareable link. Please try again.');
-            console.error(err);
-        }
-    });
-
-    // Auto Sample Preview (if empty)
+    // Sample Highlight Preview (Only if nothing is already there)
     const articleContent = document.getElementById('highlightedArticle').innerHTML.trim();
     if (!articleContent) {
         const testText = `
@@ -284,29 +238,81 @@ window.addEventListener('DOMContentLoaded', () => {
         `;
         document.getElementById('highlightedArticle').innerHTML = testText.trim();
     }
+});
 
-    // Load Shared Data on Page Load
-    const urlParams = new URLSearchParams(window.location.search);
-    const binId = urlParams.get('bin');
-    if (binId) {
-        fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-            method: 'GET',
+// Share Results Button Handler
+document.getElementById('shareBtn').addEventListener('click', async () => {
+    const article = document.getElementById('article').innerHTML.trim(); // Get HTML of the article
+    const tableKeywords = document.getElementById('tableKeywords').value.trim();
+    const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
+    const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
+
+    if (!article) {
+        alert("Paste an article first before sharing.");
+        return;
+    }
+
+    const data = {
+        article,
+        tableKeywords,
+        lsiKeywords,
+        sectionKeywords
+    };
+
+    try {
+        const res = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
             headers: {
-                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu'
-            }
-        })
-        .then(res => res.json())
-        .then(json => {
-            const data = json.record;
-            document.getElementById('article').innerHTML = data.article || '';
-            document.getElementById('tableKeywords').value = data.tableKeywords || '';
-            document.getElementById('lsiKeywords').value = data.lsiKeywords || '';
-            document.getElementById('sectionKeywords').value = data.sectionKeywords || '';
-            countKeywords();
-        })
-        .catch(e => {
-            console.error("Failed to load shared data:", e);
+                'Content-Type': 'application/json',
+                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
+                'X-Bin-Private': 'false' // Make bin public so others can view
+            },
+            body: JSON.stringify(data)
         });
+
+        const json = await res.json();
+        const binId = json.metadata.id;
+        const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
+        document.getElementById('shareLink').value = shareLink; // Outputs the link in the input field
+    } catch (err) {
+        alert('Error creating shareable link. Please try again.');
+        console.error(err);
     }
 });
 
+
+// LOAD SHARED DATA ON PAGE LOAD
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const binId = urlParams.get('bin'); // Look for 'bin' in the URL
+
+    if (binId) {
+        try {
+            // Fetch data from the JSONBin API using the binId
+            fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                method: 'GET',
+                headers: {
+                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // Your own key
+                }
+            })
+            .then(res => res.json())
+            .then(json => {
+                const data = json.record;
+                // Restore contenteditable article box (rich text)
+                document.getElementById('article').innerHTML = data.article || '';
+
+                // Restore plain keyword boxes
+                document.getElementById('tableKeywords').value = data.tableKeywords || '';
+                document.getElementById('lsiKeywords').value = data.lsiKeywords || '';
+                document.getElementById('sectionKeywords').value = data.sectionKeywords || '';
+
+                countKeywords(); // Auto-run analysis
+            })
+            .catch(e => {
+                console.error("Failed to load shared data:", e);
+            });
+        } catch (e) {
+            console.error("Failed to load shared data:", e);
+        }
+    }
+});
