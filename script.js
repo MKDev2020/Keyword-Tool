@@ -32,7 +32,7 @@ function countKeywords() {
 const wordMatches = article.match(/[\w’'-]+/g); // Includes contractions, dashes, and curly apostrophes
 const wordCount = wordMatches ? wordMatches.length : 0;
 
-document.getElementById('wordCount').textContent = `Total Words: ${wordCount.toLocaleString()}`;
+document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Updated on 24/04/2025
     
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
