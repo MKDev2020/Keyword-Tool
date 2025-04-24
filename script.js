@@ -240,11 +240,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-   // Share Results Button Handler
+// Share Results Button Handler
 document.getElementById('shareBtn').addEventListener('click', async () => {
-    const articleRaw = document.getElementById('article').innerHTML.trim(); // rich text from contenteditable div
-    const article = encodeURIComponent(articleRaw); // encoding raw HTML
-    const highlighted = encodeURIComponent(document.getElementById('highlighted-article').innerHTML.trim()); // optional, rich text for highlighted
+    const article = document.getElementById('article').innerHTML.trim(); // Get HTML of the article
     const tableKeywords = document.getElementById('tableKeywords').value.trim();
     const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
     const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
@@ -258,8 +256,7 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
         article,
         tableKeywords,
         lsiKeywords,
-        sectionKeywords,
-        highlighted // optional
+        sectionKeywords
     };
 
     try {
@@ -267,7 +264,7 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu', // Use your own key
+                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
                 'X-Bin-Private': 'false' // Make bin public so others can view
             },
             body: JSON.stringify(data)
@@ -283,29 +280,37 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
     }
 });
 
+
 // LOAD SHARED DATA ON PAGE LOAD
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const encodedData = urlParams.get('data');
+    const binId = urlParams.get('bin'); // Look for 'bin' in the URL
 
-    if (encodedData) {
+    if (binId) {
         try {
-            const json = JSON.parse(decodeURIComponent(atob(encodedData)));
+            // Fetch data from the JSONBin API using the binId
+            fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                method: 'GET',
+                headers: {
+                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // Your own key
+                }
+            })
+            .then(res => res.json())
+            .then(json => {
+                const data = json.record;
+                // Restore contenteditable article box (rich text)
+                document.getElementById('article').innerHTML = data.article || '';
 
-            // Restore contenteditable article box (rich text)
-            document.getElementById('article').innerHTML = json.article || '';
+                // Restore plain keyword boxes
+                document.getElementById('tableKeywords').value = data.tableKeywords || '';
+                document.getElementById('lsiKeywords').value = data.lsiKeywords || '';
+                document.getElementById('sectionKeywords').value = data.sectionKeywords || '';
 
-            // Restore plain keyword boxes
-            document.getElementById('tableKeywords').value = json.tableKeywords || '';
-            document.getElementById('lsiKeywords').value = json.lsiKeywords || '';
-            document.getElementById('sectionKeywords').value = json.sectionKeywords || '';
-
-            // Restore highlighted result if saved
-            if (json.highlighted) {
-                document.getElementById('highlighted-article').innerHTML = json.highlighted;
-            }
-
-            countKeywords(); // Auto-run analysis
+                countKeywords(); // Auto-run analysis
+            })
+            .catch(e => {
+                console.error("Failed to load shared data:", e);
+            });
         } catch (e) {
             console.error("Failed to load shared data:", e);
         }
