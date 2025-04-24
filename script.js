@@ -103,7 +103,7 @@ function countKeywords() {
             results.push({
                 keyword,
                 count: keywordCounts[lower],
-                density: ((keywordCounts[lower] / results.length) * 100).toFixed(2) + "%", // Updated calculation // added on 24/04/2025
+                density: wordCount > 0 ? ((keywordCounts[lower] / wordCount) * 100).toFixed(2) + "%" : "0%", // Updated calculation // added on 24/04/2025
                 category,
                 class: colorClass.replace('-highlight', '-keyword')
             });
