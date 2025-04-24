@@ -27,15 +27,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Updated on 24/04/2025
 function countKeywords() {
-    const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
+    const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces
+    
+    // Use a regular expression to split words based on spaces and basic punctuation
+    const wordsArray = article.split(/\s+/).filter(word => word.length > 0); // Split by spaces and filter empty words
+
+    const wordCount = wordsArray.length;
+
+    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count
+
+// Updated on 24/04/2025
+//function countKeywords() {
+ //   const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
     
     // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
-    const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
+//    const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
 
     // Exclude potential extra matches from special characters or empty strings // Updated on 24/04/2025
-    const wordCount = wordMatches.filter(word => word.length > 0).length;
+//    const wordCount = wordMatches.filter(word => word.length > 0).length;
 
-    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
+//    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
     
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
