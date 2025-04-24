@@ -49,7 +49,7 @@ function countWordsInHighlightedArticle() {
 function countKeywords() {
  //   const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
  //   const article = document.getElementById('article').innerText.trim(); // update on 24/04/2025
-    const article = document.getElementById('article').innerHTML; // update on 24/04/2025
+    const article = document.getElementById('article').innerHTML.trim(); // update on 24/04/2025 + added ".trim" at the end
 
     // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
  ////   const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
@@ -144,12 +144,6 @@ allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
             class: colorClass.replace('-highlight', '-keyword')
         });
     }
-});
-
-    // 🔁 Replace all densities properly AFTER building results // new update on 24/04/2025
-const totalKeywordHits = results.reduce((sum, item) => sum + item.count, 0);
-results.forEach(item => {
-    item.density = totalKeywordHits > 0 ? ((item.count / totalKeywordHits) * 100).toFixed(2) + "%" : "0%";
 });
 
     displayResults(results, workingText, placeholders);
