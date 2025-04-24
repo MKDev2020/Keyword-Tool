@@ -27,10 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Updated on 24/04/2025 for new wordcount
 function countWordsInHighlightedArticle() {
-    const highlightedContent = document.getElementById('highlightedArticle').innerText;
+    const highlightedContent = document.getElementById('highlightedArticle').innerText.trim();
     const wordMatches = highlightedContent.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || [];
+    const wordCount = wordMatches.length;
 //    const wordCount = wordMatches.filter(word => word.length > 0).length; // removed and only counting from the highlighted article box
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`;
+    return wordCount; // 🔁 Important if other functions need the word count (like density)
 }
 
 // Updated on 24/04/2025
@@ -124,23 +126,22 @@ function countKeywords() {
     });
 
   // Count words from final highlighted article (HTML stripped) updated on 24/05/2025
-const finalText = document.getElementById('highlightedArticle').innerText.trim();
-const finalWords = finalText.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || [];
-const finalWordCount = finalWords.filter(word => word.length > 0).length;
-    
-    const unique = new Set();
-    allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
-        if (!unique.has(lower)) {
-            unique.add(lower);
-            results.push({
-                keyword,
-                count: keywordCounts[lower],
-                density: finalWordCount > 0 ? ((keywordCounts[lower] / wordCount) * 100).toFixed(2) + "%" : "0%", // Updated calculation // added on 24/04/2025 // new update changed "wordCount" to "finalWordCount" on 24/05/2025
-                category,
-                class: colorClass.replace('-highlight', '-keyword')
-            });
-        }
-    });
+
+const wordCount = countWordsInHighlightedArticle(); // ✅ Gets the final article word count
+
+const unique = new Set();
+allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
+    if (!unique.has(lower)) {
+        unique.add(lower);
+        results.push({
+            keyword,
+            count: keywordCounts[lower] || 0,
+            density: wordCount > 0 ? ((keywordCounts[lower] / wordCount) * 100).toFixed(2) + "%" : "0%",
+            category,
+            class: colorClass.replace('-highlight', '-keyword')
+        });
+    }
+});
 
     displayResults(results, workingText, placeholders);
 }
