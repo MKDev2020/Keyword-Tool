@@ -25,6 +25,14 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
+// Updated on 24/04/2025 for new wordcount
+function countWordsInHighlightedArticle() {
+    const highlightedContent = document.getElementById('highlightedArticle').innerText;
+    const wordMatches = highlightedContent.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || [];
+    const wordCount = wordMatches.filter(word => word.length > 0).length;
+    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`;
+}
+
 // Updated on 24/04/2025
 // function countKeywords() {
 //    const article = document.getElementById('article').innerText.trim(); // get visible text, not raw HTML
@@ -42,12 +50,12 @@ function countKeywords() {
     const article = document.getElementById('article').innerHTML; // update on 24/04/2025
 
     // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
-    const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
+ ////   const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
 
     // Exclude potential extra matches from special characters or empty strings // Updated on 24/04/2025
-    const wordCount = wordMatches.filter(word => word.length > 0).length;
+////    const wordCount = wordMatches.filter(word => word.length > 0).length;
 
-    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
+////    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
     
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
@@ -155,6 +163,9 @@ function displayResults(results, workingText, placeholders) {
     console.log(highlightedText);
     articleElement.innerHTML = highlightedText.trim();
 
+    // Count words only from the final result
+    countWordsInHighlightedArticle();
+   
     // Build results table // added "<th>Density (%)</th>" on 24/04/2025
     let html = `
         <table>
