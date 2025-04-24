@@ -29,11 +29,13 @@ document.addEventListener('DOMContentLoaded', function () {
 function countKeywords() {
     const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces
     
-    // Refined word matching for contractions, hyphenated words, and numbers
+    // Use a more inclusive regex to account for hyphenated words, contractions, and numbers
     const wordMatches = article.match(/[A-Za-z0-9’'-]+(?:[A-Za-z0-9’'-]*[A-Za-z0-9’'-])*/g) || [];
+    
+    // Further refine by removing unwanted symbols (such as punctuation at the end of words) 
+    const refinedWords = wordMatches.map(word => word.replace(/[^\w’-]/g, '')).filter(word => word.length > 0);
 
-    // Filter out any empty matches or unwanted non-words
-    const wordCount = wordMatches.filter(word => word.length > 0).length;
+    const wordCount = refinedWords.length;
 
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count
 
