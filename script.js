@@ -127,29 +127,17 @@ function countKeywords() {
 
   // Count words from final highlighted article updated on 24/05/2025
 
-const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
 const unique = new Set();
-
 allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
     if (!unique.has(lower)) {
         unique.add(lower);
-        // Use the final unique count of keywords in the highlighted article for density calculation
-        const keywordCount = keywordCounts[lower] || 0;
         results.push({
             keyword,
-            count: keywordCount,
-            // Calculate density based on the total unique keywords
-            density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
+            count: keywordCounts[lower] || 0,
             category,
             class: colorClass.replace('-highlight', '-keyword')
         });
     }
-});
-
-    // 🔁 Replace all densities properly AFTER building results // new update on 24/04/2025
-const totalKeywordHits = results.reduce((sum, item) => sum + item.count, 0);
-results.forEach(item => {
-    item.density = totalKeywordHits > 0 ? ((item.count / totalKeywordHits) * 100).toFixed(2) + "%" : "0%";
 });
 
     displayResults(results, workingText, placeholders);
@@ -181,7 +169,7 @@ function displayResults(results, workingText, placeholders) {
     // Count words only from the final result
     countWordsInHighlightedArticle();
    
-    // Build results table // added "<th>Density (%)</th>" on 24/04/2025
+    // Build results table // 
     let html = `
         <table>
             <thead>
@@ -189,7 +177,6 @@ function displayResults(results, workingText, placeholders) {
                     <th>Color</th>
                     <th>Keyword</th>
                     <th>Count</th>
-                    <th>Density (%)</th>
                     <th>Category</th>
                 </tr>
             </thead>
@@ -205,16 +192,13 @@ function displayResults(results, workingText, placeholders) {
                     <td colspan="4"><strong>${category} Keywords</strong></td>
                 </tr>
             `;
-            // added "<td>${item.density}</td>" on 24/04/2025
-            // New update changed the above to "<td>${((item.count / wordCount) * 100).toFixed(2)}%</td> <!-- Updated to use item.count -->" on 24/04/2025
-            // New update changed the above to "<td>${item.density}</td> <!-- Display pre-calculated density -->" on 24/04/2025
+          
             categoryResults.forEach(item => {
                 html += `
                     <tr>
                         <td><div class="color-swatch ${item.class.replace('-keyword', '-highlight')}"></div></td>
                         <td>${item.keyword}</td>
                         <td>${item.count}</td>
-                        <td>${item.density}</td> <!-- Display pre-calculated density --> 
                         <td>${item.category}</td>
                     </tr>
                 `;
