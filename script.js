@@ -1,27 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // 🔁 Shared link logic from JSONBin
-    const urlParams = new URLSearchParams(window.location.search);
-    const binId = urlParams.get('bin');
-    if (binId) {
-        fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-            headers: {
-                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu' // 🔁 Replace this with your real JSONBin key
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('article').value = data.record.article;
-            document.getElementById('tableKeywords').value = data.record.tableKeywords;
-            document.getElementById('lsiKeywords').value = data.record.lsiKeywords;
-            document.getElementById('sectionKeywords').value = data.record.sectionKeywords;
-            countKeywords(); // Auto-highlight
-        })
-        .catch(err => {
-            console.error('Error loading shared data:', err);
-        });
-    }
-
-    // 📌 Your existing event listener setup
+      // 📌 Your existing event listener setup
     document.getElementById('countBtn').addEventListener('click', countKeywords);
 });
 
@@ -30,35 +8,14 @@ function countWordsInHighlightedArticle() {
     const highlightedContent = document.getElementById('highlightedArticle').innerText.trim();
     const wordMatches = highlightedContent.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || [];
     const wordCount = wordMatches.length;
-//    const wordCount = wordMatches.filter(word => word.length > 0).length; // removed and only counting from the highlighted article box
     document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`;
     return wordCount; // 🔁 Important if other functions need the word count (like density)
 }
 
 // Updated on 24/04/2025
-// function countKeywords() {
-//    const article = document.getElementById('article').innerText.trim(); // get visible text, not raw HTML
-
-//    const wordMatches = article.match(/\b[\w’'-]+\b/g) || [];
-
-//    const wordCount = wordMatches.length;
-
-//    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`;
-
-// Updated on 24/04/2025
 function countKeywords() {
- //   const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
- //   const article = document.getElementById('article').innerText.trim(); // update on 24/04/2025
     const article = document.getElementById('article').innerHTML; // update on 24/04/2025
 
-    // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
- ////   const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
-
-    // Exclude potential extra matches from special characters or empty strings // Updated on 24/04/2025
-////    const wordCount = wordMatches.filter(word => word.length > 0).length;
-
-////    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
-    
     const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
     const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
     const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
@@ -125,32 +82,31 @@ function countKeywords() {
         }
     });
 
-  // Count words from final highlighted article updated on 24/05/2025
+    // Count words from final highlighted article updated on 24/05/2025
+    const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
+    const unique = new Set();
 
-const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
-const unique = new Set();
-
-allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
-    if (!unique.has(lower)) {
-        unique.add(lower);
-        // Use the final unique count of keywords in the highlighted article for density calculation
-        const keywordCount = keywordCounts[lower] || 0;
-        results.push({
-            keyword,
-            count: keywordCount,
-            // Calculate density based on the total unique keywords
-            density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
-            category,
-            class: colorClass.replace('-highlight', '-keyword')
-        });
-    }
-});
+    allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
+        if (!unique.has(lower)) {
+            unique.add(lower);
+            // Use the final unique count of keywords in the highlighted article for density calculation
+            const keywordCount = keywordCounts[lower] || 0;
+            results.push({
+                keyword,
+                count: keywordCount,
+                // Calculate density based on the total unique keywords
+                density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
+                category,
+                class: colorClass.replace('-highlight', '-keyword')
+            });
+        }
+    });
 
     // 🔁 Replace all densities properly AFTER building results // new update on 24/04/2025
-const totalKeywordHits = results.reduce((sum, item) => sum + item.count, 0);
-results.forEach(item => {
-    item.density = totalKeywordHits > 0 ? ((item.count / totalKeywordHits) * 100).toFixed(2) + "%" : "0%";
-});
+    const totalKeywordHits = results.reduce((sum, item) => sum + item.count, 0);
+    results.forEach(item => {
+        item.density = totalKeywordHits > 0 ? ((item.count / totalKeywordHits) * 100).toFixed(2) + "%" : "0%";
+    });
 
     displayResults(results, workingText, placeholders);
 }
@@ -180,7 +136,7 @@ function displayResults(results, workingText, placeholders) {
 
     // Count words only from the final result
     countWordsInHighlightedArticle();
-   
+
     // Build results table // added "<th>Density (%)</th>" on 24/04/2025
     let html = `
         <table>
@@ -205,9 +161,6 @@ function displayResults(results, workingText, placeholders) {
                     <td colspan="4"><strong>${category} Keywords</strong></td>
                 </tr>
             `;
-            // added "<td>${item.density}</td>" on 24/04/2025
-            // New update changed the above to "<td>${((item.count / wordCount) * 100).toFixed(2)}%</td> <!-- Updated to use item.count -->" on 24/04/2025
-            // New update changed the above to "<td>${item.density}</td> <!-- Display pre-calculated density -->" on 24/04/2025
             categoryResults.forEach(item => {
                 html += `
                     <tr>
@@ -257,63 +210,11 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
     // Share Results Button Handler
-    document.getElementById('shareBtn').addEventListener('click', async () => {
-     //   const article = document.getElementById('article').value.trim();
-     //   const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
-        const article = document.getElementById('article').innerHTML; // update on 24/05/2025
-        const tableKeywords = document.getElementById('tableKeywords').value.trim();
-        const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
-        const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
+    document.getElementById('shareBtn').addEventListener('click', () => {
+        const article = document.getElementById('article').value;
+        const tableKeywords = document.getElementById('tableKeywords').value;
+        const lsiKeywords = document.getElementById('lsiKeywords').value;
+        const sectionKeywords = document.getElementById('sectionKeywords').value;
 
-        if (!article) {
-            alert("Paste an article first before sharing.");
-            return;
-        }
-
-        const data = {
-            article,
-            tableKeywords,
-            lsiKeywords,
-            sectionKeywords
-        };
-
-        try {
-            const res = await fetch('https://api.jsonbin.io/v3/b', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
-                    'X-Bin-Private': 'false'  // Make bin public so others can view
-                },
-                body: JSON.stringify(data)
-            });
-
-            const json = await res.json();
-            const binId = json.metadata.id;
-            const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
-            document.getElementById('shareLink').value = shareLink;
-        } catch (err) {
-            alert('Error creating shareable link. Please try again.');
-            console.error(err);
-        }
-    });
-
-// LOAD SHARED DATA ON PAGE LOAD
-window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const encodedData = urlParams.get('data');
-
-    if (encodedData) {
-        try {
-            const json = JSON.parse(decodeURIComponent(atob(encodedData)));
-            document.getElementById('article').value = json.article || '';
-            document.getElementById('tableKeywords').value = json.table || '';
-            document.getElementById('lsiKeywords').value = json.lsi || '';
-            document.getElementById('sectionKeywords').value = json.section || '';
-
-            countKeywords(); // Auto-run analysis
-        } catch (e) {
-            console.error("Failed to load shared data:", e);
-        }
-    }
-});
+     
+     
