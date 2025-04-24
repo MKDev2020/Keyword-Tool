@@ -240,47 +240,38 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-    // Share Results Button Handler
     document.getElementById('shareBtn').addEventListener('click', async () => {
-     //   const article = document.getElementById('article').value.trim();
-     //   const article = document.getElementById('article').innerText.trim(); // update on 24/05/2025
-        const article = document.getElementById('article').innerHTML; // update on 24/05/2025
-        const tableKeywords = document.getElementById('tableKeywords').value.trim();
-        const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
-        const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
+    const data = {
+        article: "Test",
+        tableKeywords: "one,two,three",
+        lsiKeywords: "four,five",
+        sectionKeywords: "six"
+    };
 
-        if (!article) {
-            alert("Paste an article first before sharing.");
-            return;
-        }
+    try {
+        const res = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
+                'X-Bin-Private': 'false'
+            },
+            body: JSON.stringify(data)
+        });
 
-        const data = {
-            article,
-            tableKeywords,
-            lsiKeywords,
-            sectionKeywords
-        };
+        console.log("Response status:", res.status);
+        const json = await res.json();
+        console.log("Response body:", json);
 
-        try {
-            const res = await fetch('https://api.jsonbin.io/v3/b', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
-                    'X-Bin-Private': 'false'  // Make bin public so others can view
-                },
-                body: JSON.stringify(data)
-            });
+        const binId = json.metadata.id;
+        const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
+        document.getElementById('shareLink').value = shareLink;
+    } catch (err) {
+        alert('Error creating shareable link. Please try again.');
+        console.error("Share button error:", err);
+    }
+});
 
-            const json = await res.json();
-            const binId = json.metadata.id;
-            const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
-            document.getElementById('shareLink').value = shareLink;
-        } catch (err) {
-            alert('Error creating shareable link. Please try again.');
-            console.error(err);
-        }
-    });
 
 // LOAD SHARED DATA ON PAGE LOAD
 window.addEventListener('DOMContentLoaded', () => {
