@@ -240,12 +240,23 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-    document.getElementById('shareBtn').addEventListener('click', async () => {
+// Share Results Button Handler
+document.getElementById('shareBtn').addEventListener('click', async () => {
+    const article = document.getElementById('article').innerHTML.trim(); // update on 24/05/2025
+    const tableKeywords = document.getElementById('tableKeywords').value.trim();
+    const lsiKeywords = document.getElementById('lsiKeywords').value.trim();
+    const sectionKeywords = document.getElementById('sectionKeywords').value.trim();
+
+    if (!article) {
+        alert("Paste an article first before sharing.");
+        return;
+    }
+
     const data = {
-        article: "Test",
-        tableKeywords: "one,two,three",
-        lsiKeywords: "four,five",
-        sectionKeywords: "six"
+        article,
+        tableKeywords,
+        lsiKeywords,
+        sectionKeywords
     };
 
     try {
@@ -254,23 +265,54 @@ window.addEventListener('DOMContentLoaded', () => {
             headers: {
                 'Content-Type': 'application/json',
                 'X-Master-Key': '$2a$10$uN1KTFWnNUrDAkdKCMnLsuRiCydJCUybHsplO0rmmohBfpri/QHFu',
-                'X-Bin-Private': 'false'
+                // Removing 'X-Bin-Private' temporarily for testing
+                // 'X-Bin-Private': 'false'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                record: data // Wrap the data in a 'record' key for compatibility
+            })
         });
 
-        console.log("Response status:", res.status);
-        const json = await res.json();
-        console.log("Response body:", json);
+        // Debugging: Check status and raw response
+        console.log("Status Code:", res.status);
+        const text = await res.text();
+        console.log("Raw Response Text:", text);
 
-        const binId = json.metadata.id;
-        const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
-        document.getElementById('shareLink').value = shareLink;
+        // If response is successful (status code 200)
+        if (res.status === 200) {
+            const json = JSON.parse(text);
+            const binId = json.metadata.id;
+            const shareLink = `${window.location.origin}${window.location.pathname}?bin=${binId}`;
+            document.getElementById('shareLink').value = shareLink;
+        } else {
+            throw new Error('Failed to create shareable link');
+        }
     } catch (err) {
         alert('Error creating shareable link. Please try again.');
-        console.error("Share button error:", err);
+        console.error(err);
     }
 });
+
+// LOAD SHARED DATA ON PAGE LOAD
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const encodedData = urlParams.get('data');
+
+    if (encodedData) {
+        try {
+            const json = JSON.parse(decodeURIComponent(atob(encodedData)));
+            document.getElementById('article').innerHTML = json.article || '';
+            document.getElementById('tableKeywords').value = json.table || '';
+            document.getElementById('lsiKeywords').value = json.lsi || '';
+            document.getElementById('sectionKeywords').value = json.section || '';
+
+            countKeywords(); // Auto-run analysis
+        } catch (e) {
+            console.error("Failed to load shared data:", e);
+        }
+    }
+});
+
 
 
 // LOAD SHARED DATA ON PAGE LOAD
