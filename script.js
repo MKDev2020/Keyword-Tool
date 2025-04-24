@@ -47,16 +47,26 @@ function countWordsInHighlightedArticle() {
 
 // Updated on 24/04/2025
 function countKeywords() {
-    const article = document.getElementById('article').innerText.trim(); // Get only the visible text, not HTML
+ //   const article = document.getElementById('article').value.trim(); // Trim leading/trailing spaces // Updated on 24/04/2025
+ //   const article = document.getElementById('article').innerText.trim(); // update on 24/04/2025
+    const article = document.getElementById('article').innerHTML; // update on 24/04/2025
+
+    // Refined word match to better reflect Google Docs' counting (handling hyphens, apostrophes, and special characters) // Updated on 24/04/2025
+ ////   const wordMatches = article.match(/[\w'-]+(?:[\w'-]*[\w'-])*/g) || []; // Account for empty matches // Updated on 24/04/2025
+
+    // Exclude potential extra matches from special characters or empty strings // Updated on 24/04/2025
+////    const wordCount = wordMatches.filter(word => word.length > 0).length;
+
+////    document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}`; // Display word count // Updated on 24/04/2025
+    
+    const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
+    const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
+    const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
 
     if (!article) {
         alert('Please paste an article first.');
         return;
     }
-
-    const tableKeywords = parseKeywords(document.getElementById('tableKeywords').value);
-    const lsiKeywords = parseKeywords(document.getElementById('lsiKeywords').value);
-    const sectionKeywords = parseKeywords(document.getElementById('sectionKeywords').value);
 
     const categories = [
         { name: 'Table', keywords: tableKeywords, colorClass: 'table-highlight' },
@@ -115,47 +125,33 @@ function countKeywords() {
         }
     });
 
-    // Optionally log the word count here
-    const wordMatches = article.match(/\b[\w'-]+\b/g) || [];
-    const wordCount = wordMatches.length;
-    console.log(`Word Count: ${wordCount}`);
-}
-
-
   // Count words from final highlighted article updated on 24/05/2025
 
-// const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
-   
-   const unique = new Set();
+const finalWordCount = countWordsInHighlightedArticle(); // Get the final article word count (non-overlapping unique words)
+const unique = new Set();
 
 allKeywords.forEach(({ keyword, lower, colorClass, category }) => {
     if (!unique.has(lower)) {
         unique.add(lower);
+        // Use the final unique count of keywords in the highlighted article for density calculation
         const keywordCount = keywordCounts[lower] || 0;
         results.push({
             keyword,
             count: keywordCount,
-            density: "", // density is empty at this point
+            // Calculate density based on the total unique keywords
+            density: finalWordCount > 0 ? ((keywordCount / finalWordCount) * 100).toFixed(2) + "%" : "0%",
             category,
             class: colorClass.replace('-highlight', '-keyword')
         });
     }
 });
 
-// ✅ Calculate the final word count *after* article is processed (after keywords are counted, highlighted):
-const finalWordCount = countWordsInHighlightedArticle(); // 👈 This must come here!
-
-// ✅ Now calculate density using the final word count:
+    // 🔁 Replace all densities properly AFTER building results // new update on 24/04/2025
+const totalKeywordHits = results.reduce((sum, item) => sum + item.count, 0);
 results.forEach(item => {
-    item.density = finalWordCount > 0
-        ? ((item.count / finalWordCount) * 100).toFixed(2) + "%" 
-        : "0%";
+    item.density = totalKeywordHits > 0 ? ((item.count / totalKeywordHits) * 100).toFixed(2) + "%" : "0%";
 });
 
-// ✅ Debug logs to verify correct values
-console.log("✅ Final Word Count of Article:", finalWordCount);
-console.log("✅ Keyword Counts:", results.map(r => ({ keyword: r.keyword, count: r.count })));    
-    
     displayResults(results, workingText, placeholders);
 }
 
@@ -321,4 +317,3 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
